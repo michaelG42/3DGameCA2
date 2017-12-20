@@ -512,7 +512,7 @@ namespace GDApp
 
             #region Skybox
 
-
+            //
             clonePlane = Skybox.Clone() as PrimitiveObject;
 
             clonePlane.Transform.Rotation = new Vector3(90, 0, 0);
