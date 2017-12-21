@@ -74,6 +74,7 @@ namespace GDLibrary
         NormalQuad,
         NormalCube,
         NormalSphere,
+        NormalCylinder,
 
         //creates normal, spherical, or cylindrical billboards
         Billboard
@@ -725,5 +726,101 @@ namespace GDLibrary
 
             return indices;
         }
+
+        public static VertexPositionNormalTexture[] GetNormalTexturedCylinder(out PrimitiveType primitiveType, out int primitiveCount)
+        {
+            primitiveType = PrimitiveType.TriangleList;
+            primitiveCount = 124;
+
+            List<VertexPositionNormalTexture> vertices = new List<VertexPositionNormalTexture>();
+
+            int roundness = 32;
+
+            float height = 1;
+            float radius = 1;
+
+            for (int i = 0; i < roundness; i++)
+            {
+                Vector3 normal = GetCircleVector(i, roundness);
+                float textureU = (float)i / (float)roundness;
+                Vector3 position = normal * radius + Vector3.Up * height;
+
+                vertices.Add(new VertexPositionNormalTexture(position, normal, new Vector2(textureU, 0)));
+
+                position = normal * radius + Vector3.Down * height;
+
+                vertices.Add(new VertexPositionNormalTexture(position, normal, new Vector2(textureU, 1)));
+
+            }
+
+            for (int i = 0; i < roundness; i++)
+            {
+
+                Vector3 position = GetCircleVector(i, roundness) * radius +
+                                    Vector3.Up * height;
+
+                vertices.Add(new VertexPositionNormalTexture(position, Vector3.Up, new Vector2(position.X, position.Z)));
+            }
+
+            for (int i = 0; i < roundness; i++)
+            {
+
+                Vector3 position = GetCircleVector(i, roundness) * radius +
+                                    Vector3.Down * height;
+                vertices.Add(new VertexPositionNormalTexture(position, Vector3.Down, Vector2.Zero));
+            }
+
+
+            return vertices.ToArray();
+        }
+
+        public static Vector3 GetCircleVector(int i, int roundness)
+        {
+            float angle = i * MathHelper.TwoPi / roundness;
+
+            float dx = (float)Math.Cos(angle);
+            float dz = (float)Math.Sin(angle);
+
+            return new Vector3(dx, 0, dz);
+        }
+
+        public static short[] GetCylinderIndices()
+        {
+
+            List<short> indices = new List<short>();
+
+            int roundness = 32;
+
+            for (int i = 0; i < roundness; i++)
+            {
+                indices.Add((short)(i * 2));
+                indices.Add((short)(i * 2 + 1));
+                indices.Add((short)((i * 2 + 2) % (roundness * 2)));
+
+                indices.Add((short)(i * 2 + 1));
+                indices.Add((short)((i * 2 + 3) % (roundness * 2)));
+                indices.Add((short)((i * 2 + 2) % (roundness * 2)));
+
+            }
+
+            for (int i = 0; i < roundness - 2; i++)
+            {
+                indices.Add((short)(64));
+                indices.Add((short)(64 + (i + 1) % roundness));
+                indices.Add((short)(64 + (i + 2) % roundness));       
+            }
+
+            for (int i = 0; i < roundness - 2; i++)
+            {
+                indices.Add((short)(96));
+                indices.Add((short)(96 + (i + 2) % roundness));
+                indices.Add((short)(96 + (i + 1) % roundness));
+                
+            }
+
+            return indices.ToArray();
+        }
+
     }
+
 }

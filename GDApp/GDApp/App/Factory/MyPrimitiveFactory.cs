@@ -152,6 +152,15 @@ namespace GDApp
                     }
                     break;
 
+                case ShapeType.NormalCylinder:
+                    {
+                        if (this.PrimitiveDictionary.ContainsKey(shapeType))
+                            primitiveObject = this.PrimitiveDictionary[shapeType].Clone() as PrimitiveObject;
+                        else
+                            primitiveObject = GetNormalTexturedCylinder(graphics, shapeType, effectParameters);
+                    }
+                    break;
+
                 //add a case here for each of your custom shapes (e.g. lit diamonds)
 
                 default:
@@ -307,6 +316,21 @@ namespace GDApp
 
             //create the buffered data using indexed since it will reduce the number of vertices required from 36 - 12 - see GetTexturedCube() comment
             vertexData = new IndexedBufferedVertexData<VertexPositionColor>(graphics, vertices, indices, primitiveType, primitiveCount);
+
+            //instanciate the object and return a reference
+            return GetPrimitiveObjectFromVertexData(vertexData, shapeType, effectParameters);
+        }
+
+
+        private PrimitiveObject GetNormalTexturedCylinder(GraphicsDevice graphics, ShapeType shapeType, EffectParameters effectParameters)
+        {
+            //get the vertices
+            VertexPositionNormalTexture[] vertices = PrimitiveUtility.GetNormalTexturedCylinder(out primitiveType, out primitiveCount);
+
+            short[] indices = PrimitiveUtility.GetCylinderIndices();
+
+            //create the buffered data using indexed since it will reduce the number of vertices required from 36 - 12 - see GetTexturedCube() comment
+            vertexData = new IndexedBufferedVertexData<VertexPositionNormalTexture>(graphics, vertices, indices, primitiveType, primitiveCount);
 
             //instanciate the object and return a reference
             return GetPrimitiveObjectFromVertexData(vertexData, shapeType, effectParameters);

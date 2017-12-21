@@ -347,7 +347,6 @@
       <Processor>VideoProcessor</Processor>
     </Compile>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Compile Include="Assets\Textures\Level\level1.png">
       <Name>level1</Name>
@@ -358,6 +357,20 @@
   <ItemGroup>
     <Compile Include="Assets\Textures\Semitransparent\transparentstripes.png">
       <Name>transparentstripes</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\Textures\Enviornment\Lava.jpg">
+      <Name>Lava</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\Textures\Enviornment\Space.jpg">
+      <Name>Space</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

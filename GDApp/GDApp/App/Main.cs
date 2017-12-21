@@ -233,16 +233,19 @@ namespace GDApp
         {
             #region Textures
             //environment
-            this.textureDictionary.Load("Assets/Textures/Props/Crates/crate1"); //demo use of the shorter form of Load() that generates key from asset name
-            this.textureDictionary.Load("Assets/Textures/Props/Crates/crate2");
+            //this.textureDictionary.Load("Assets/Textures/Props/Crates/crate1"); //demo use of the shorter form of Load() that generates key from asset name
+            //this.textureDictionary.Load("Assets/Textures/Props/Crates/crate2");
             this.textureDictionary.Load("Assets/GDDebug/Textures/checkerboard");
-            this.textureDictionary.Load("Assets/Textures/Foliage/Ground/grass1");
-            this.textureDictionary.Load("Assets/Textures/Skybox/back");
-            this.textureDictionary.Load("Assets/Textures/Skybox/left");
-            this.textureDictionary.Load("Assets/Textures/Skybox/right");
-            this.textureDictionary.Load("Assets/Textures/Skybox/sky");
-            this.textureDictionary.Load("Assets/Textures/Skybox/front");
-            this.textureDictionary.Load("Assets/Textures/Foliage/Trees/tree2");
+            //this.textureDictionary.Load("Assets/Textures/Foliage/Ground/grass1");
+            //this.textureDictionary.Load("Assets/Textures/Skybox/back");
+            //this.textureDictionary.Load("Assets/Textures/Skybox/left");
+            //this.textureDictionary.Load("Assets/Textures/Skybox/right");
+            //this.textureDictionary.Load("Assets/Textures/Skybox/sky");
+            //this.textureDictionary.Load("Assets/Textures/Skybox/front");
+            //this.textureDictionary.Load("Assets/Textures/Foliage/Trees/tree2");
+            this.textureDictionary.Load("Assets/Textures/Enviornment/Lava");
+            this.textureDictionary.Load("Assets/Textures/Enviornment/Space");
+
 
             this.textureDictionary.Load("Assets/Textures/Semitransparent/transparentstripes");
 
@@ -378,11 +381,13 @@ namespace GDApp
             int worldScale = 250;
             InitializeNonCollidableGround(worldScale);
             InitializeNonCollidableSkyBox(worldScale);
+
             //collidable and drivable player
             InitializeCollidablePlayer();
 
             //collidable objects that we can turn on when we hit them
             InitializeCollidableActivatableObjects();
+            InitializeCollidableCylinder();
         }
 
         private void InitializeCollidableActivatableObjects()
@@ -441,6 +446,50 @@ namespace GDApp
             }
         }
 
+        private void InitializeCollidableCylinder()
+        {
+            //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
+            BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
+
+            //get the archetypal primitive object from the factory
+            PrimitiveObject archetypeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCylinder, effectParameters);
+
+            //set the texture that all clones will have
+            archetypeObject.EffectParameters.Texture = this.textureDictionary["checkerboard"];
+
+            Transform3D transform;
+            CollidablePrimitiveObject collidablePrimitiveObject;
+           // IController controller;
+
+
+                //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
+                transform = new Transform3D(new Vector3(-25, 2, 0), Vector3.Zero, new Vector3(2, 2, 2), Vector3.UnitX, Vector3.UnitY);
+
+                //make the collidable primitive
+                collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
+                    new BoxCollisionPrimitive(transform), this.objectManager);
+
+                //do we want an actor type for CDCR?
+                collidablePrimitiveObject.ActorType = ActorType.CollidableActivatable;
+
+                //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
+                collidablePrimitiveObject.Transform = transform;
+
+                collidablePrimitiveObject.Transform.ScaleBy(new Vector3(15, 0.25f, 15));
+
+                //#region Scale Lerp
+                ////if we want to make the boxes move (or do something else) then just attach a controller
+                //controller = new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation,
+                //    new Vector3(0, 0, 1), new TrigonometricParameters(10, 0.1f, 180 * (i - 5)));
+                //collidablePrimitiveObject.AttachController(controller);
+                //#endregion
+
+
+
+                this.objectManager.Add(collidablePrimitiveObject);
+            
+        }
+
 
         private void InitializeNonCollidableGround(int worldScale)
         {
@@ -451,7 +500,7 @@ namespace GDApp
             PrimitiveObject ground = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
 
             //set the texture
-            ground.EffectParameters.Texture = this.textureDictionary["grass1"];
+            ground.EffectParameters.Texture = this.textureDictionary["Lava"];
 
             //set the transform
             //since the object is 1 unit in height, we move it down to Y-axis == -0.5f so that the top of the surface is at Y == 0
@@ -508,7 +557,7 @@ namespace GDApp
             PrimitiveObject Skybox = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
             PrimitiveObject clonePlane = null;
             //set texture once so all clones have the same
-            Skybox.EffectParameters.Texture = this.textureDictionary["checkerboard"];
+            Skybox.EffectParameters.Texture = this.textureDictionary["Space"];
 
             #region Skybox
 
@@ -829,7 +878,7 @@ namespace GDApp
         private void AddUIElements()
         {
             InitializeUIMousePointer();
-            InitializeUIProgress();
+            //InitializeUIProgress();
         }
 
         private void InitializeUIMousePointer()

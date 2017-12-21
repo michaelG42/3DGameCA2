@@ -59,6 +59,8 @@ namespace GDLibrary
                 parentActor.Transform.Translation =
                    parentActor.Transform.OriginalTransform3D.Translation
                            + lerpFactor * this.lerpDirection;
+
+                //parentActor.Transform.Scale = parentActor.Transform.OriginalTransform3D.Scale + Vector3.One * lerpFactor;
             }
 
         }

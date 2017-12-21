@@ -140,7 +140,7 @@ namespace GDLibrary
         {
             //Remember this code from our initial aliasing problems with the Sky box?
             //enable anti-aliasing along the edges of the quad i.e. to remove jagged edges to the primitive
-            game.GraphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
+            game.GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
 
             if (isOpaque)
             {
