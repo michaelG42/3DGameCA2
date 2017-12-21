@@ -10,6 +10,8 @@ namespace GDLibrary
         private Keys[] moveKeys;
         private bool bThirdPersonZoneEventSent;
         private ManagerParameters managerParameters;
+
+        private Vector3 acceleration;
         #endregion
 
         #region Properties
@@ -24,7 +26,7 @@ namespace GDLibrary
             this.moveKeys = moveKeys;
             this.moveSpeed = moveSpeed;
             this.rotationSpeed = rotationSpeed;
-
+            this.acceleration = new Vector3(0,0,0);
             //for input
             this.managerParameters = managerParameters;
         }
@@ -47,7 +49,7 @@ namespace GDLibrary
         {
             //read any input and store suggested increments
             HandleInput(gameTime);
-
+            HandleAcceleration(gameTime);
             //have we collided with something?
             this.Collidee = CheckCollisions(gameTime);
 
@@ -109,29 +111,106 @@ namespace GDLibrary
             }
         }
 
+        protected void HandleAcceleration(GameTime gameTime)
+        {
+
+            this.Transform.TranslateBy(acceleration);
+
+        }
+
         protected override void HandleInput(GameTime gameTime)
         {
+
+            if(this.managerParameters.KeyboardManager.IsAnyKeyPressed())
+            {
+           
             if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
             {
-                this.Transform.TranslateIncrement
-                    = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
-                            * this.moveSpeed;
+                //this.Transform.TranslateIncrement
+                //    = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
+                //            * this.moveSpeed;
+
+                //this.Transform.TranslateBy(new Vector3(0, 0, -this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds));
+
+                this.acceleration += new Vector3(0, 0, -this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds);
             }
             else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
             {
-                this.Transform.TranslateIncrement
-                   = -this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
-                           * this.moveSpeed;
+                //this.Transform.TranslateIncrement
+                //   = -this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
+                //           * this.moveSpeed;
+
+                this.acceleration += (new Vector3(0, 0, this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds));
             }
 
             if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateLeft])) //Left
             {
-                this.Transform.RotateIncrement = gameTime.ElapsedGameTime.Milliseconds * this.rotationSpeed;
+                //this.Transform.RotateIncrement = gameTime.ElapsedGameTime.Milliseconds * this.rotationSpeed;
+                //             this.Transform.TranslateIncrement
+                //= -this.Transform.Right * gameTime.ElapsedGameTime.Milliseconds
+                //        * this.moveSpeed;
+
+                this.acceleration += (new Vector3(-this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds, 0, 0));
             }
             else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateRight])) //Right
             {
-                this.Transform.RotateIncrement = -gameTime.ElapsedGameTime.Milliseconds * this.rotationSpeed;
+                //this.Transform.RotateIncrement = -gameTime.ElapsedGameTime.Milliseconds * this.rotationSpeed;
+
+                //         this.Transform.TranslateIncrement
+                //= this.Transform.Right * gameTime.ElapsedGameTime.Milliseconds
+                //        * this.moveSpeed;
+
+                this.acceleration += (new Vector3(this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds, 0, 0));
             }
+            }
+            else
+            {
+                //Else No input is pressed It will graduly decelerate the player
+                CalculateVelocity(gameTime);
+            }
+
+            
+
+        }
+
+        protected void CalculateVelocity(GameTime gameTime)
+        {
+            //Get Players Velocity in X and Y direction
+            float XVelocity = this.acceleration.X;
+            float ZVelocity = this.acceleration.Z;
+
+            //First Check Z Velocity + or - for the direction
+            //then gradualy slow down by adding the opposite direction, if it is nearly 0, set to 0 to stop
+            if (ZVelocity < -0.05)
+            {
+                ZVelocity += this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+            else if (ZVelocity > 0.05)
+            {
+                ZVelocity -= this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+            else
+            {
+                ZVelocity = 0;
+            }
+
+            //Same as above for X direction
+            if (XVelocity < -0.05)
+            {
+
+                XVelocity += this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+            else if (XVelocity > 0.05)
+            {
+                XVelocity -= this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+            else
+            {
+                XVelocity = 0;
+            }
+
+            //Finaly set the new velocity
+            this.acceleration = (new Vector3(XVelocity, 0, ZVelocity));
         }
     }
 }

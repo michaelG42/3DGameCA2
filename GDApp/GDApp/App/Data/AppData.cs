@@ -74,7 +74,8 @@ namespace GDLibrary
 
         public static readonly Keys[] PlayerOneMoveKeys = { Keys.U, Keys.J, Keys.H, Keys.K, Keys.Y, Keys.I, Keys.N, Keys.M};
         public static readonly Keys[] PlayerTwoMoveKeys = { Keys.NumPad8, Keys.NumPad5, Keys.NumPad4, Keys.NumPad6, Keys.NumPad7, Keys.NumPad9, Keys.NumPad2, Keys.NumPad3 };
-        public static readonly float PlayerMoveSpeed = 0.02f;
+        public static readonly float PlayerMoveSpeed = 0.0002f;
+        public static readonly float PlayerAcceleration = 0.0002f;
         public static readonly float PlayerStrafeSpeed = 0.7f * PlayerMoveSpeed;
         public static readonly float PlayerRotationSpeed = 0.08f;
         public static readonly float PlayerRadius = 1.5f;

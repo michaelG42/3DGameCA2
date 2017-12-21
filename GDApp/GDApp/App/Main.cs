@@ -564,7 +564,7 @@ namespace GDApp
             PrimitiveObject primitiveObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.ColoredSphere, effectParameters);
 
             //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
-            Transform3D transform = new Transform3D(new Vector3(0, Scale / 2 + 2, position), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
+            Transform3D transform = new Transform3D(new Vector3(0, Scale / 2 + 2, position), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
 
             //instanciate a box primitive at player position
             BoxCollisionPrimitive collisionPrimitive = new BoxCollisionPrimitive(transform);
