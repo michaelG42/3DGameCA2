@@ -49,7 +49,8 @@ namespace GDLibrary
         {
             //read any input and store suggested increments
             HandleInput(gameTime);
-            HandleAcceleration(gameTime);
+           HandleAcceleration(gameTime);
+            ApplyGravity(gameTime);
             //have we collided with something?
             this.Collidee = CheckCollisions(gameTime);
 
@@ -113,11 +114,18 @@ namespace GDLibrary
 
         protected void HandleAcceleration(GameTime gameTime)
         {
-
-            this.Transform.TranslateBy(acceleration);
+           // this.acceleration.Y = -0.1f;
+            this.Transform.TranslateBy(acceleration );
 
         }
 
+        protected void ApplyGravity(GameTime gameTime)
+        {
+            //Gravity
+            this.Transform.TranslateIncrement
+    = -this.Transform.Up * gameTime.ElapsedGameTime.Milliseconds
+            * 0.02f;
+        }
         protected override void HandleInput(GameTime gameTime)
         {
 
@@ -125,25 +133,25 @@ namespace GDLibrary
             {
            
             if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
-            {
-                //this.Transform.TranslateIncrement
-                //    = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
-                //            * this.moveSpeed;
+                {
+                    //this.Transform.TranslateIncrement
+                    //    = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
+                    //            * this.moveSpeed;
 
-                //this.Transform.TranslateBy(new Vector3(0, 0, -this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds));
+                    //this.Transform.TranslateBy(new Vector3(0, 0, -this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds));
 
-                this.acceleration += new Vector3(0, 0, -this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds);
+                   this.acceleration += new Vector3(0, 0, -this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds);
             }
             else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
             {
-                //this.Transform.TranslateIncrement
-                //   = -this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
-                //           * this.moveSpeed;
+                    //this.Transform.TranslateIncrement
+                    //   = -this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
+                    //           * this.moveSpeed;
 
-                this.acceleration += (new Vector3(0, 0, this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds));
-            }
+                    this.acceleration += (new Vector3(0, 0, this.moveSpeed * gameTime.ElapsedGameTime.Milliseconds));
+                }
 
-            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateLeft])) //Left
+                if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateLeft])) //Left
             {
                 //this.Transform.RotateIncrement = gameTime.ElapsedGameTime.Milliseconds * this.rotationSpeed;
                 //             this.Transform.TranslateIncrement
@@ -154,7 +162,7 @@ namespace GDLibrary
             }
             else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateRight])) //Right
             {
-                //this.Transform.RotateIncrement = -gameTime.ElapsedGameTime.Milliseconds * this.rotationSpeed;
+               // this.Transform.RotateIncrement = -gameTime.ElapsedGameTime.Milliseconds * this.rotationSpeed;
 
                 //         this.Transform.TranslateIncrement
                 //= this.Transform.Right * gameTime.ElapsedGameTime.Milliseconds
@@ -169,10 +177,9 @@ namespace GDLibrary
                 CalculateVelocity(gameTime);
             }
 
-            
 
         }
-
+        
         protected void CalculateVelocity(GameTime gameTime)
         {
             //Get Players Velocity in X and Y direction

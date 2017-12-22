@@ -382,7 +382,7 @@ namespace GDApp
             int arenaScale = 30;
             InitializeNonCollidableGround(worldScale);
             InitializeNonCollidableSkyBox(worldScale);
-
+           // InitializeCollidableDecorators();
             //collidable and drivable player
             InitializeCollidablePlayer(arenaScale);
 
@@ -413,10 +413,10 @@ namespace GDApp
 
                 //make the collidable primitive
                 collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                    new BoxCollisionPrimitive(transform), this.objectManager);
+                    new SphereCollisionPrimitive(transform, Scale), this.objectManager);
 
                 //do we want an actor type for CDCR?
-                collidablePrimitiveObject.ActorType = ActorType.CollidableActivatable;
+                collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
 
                 //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
                 collidablePrimitiveObject.Transform = transform;
@@ -429,10 +429,10 @@ namespace GDApp
 
             //make the collidable primitive
             collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                new BoxCollisionPrimitive(transform), this.objectManager);
+                new SphereCollisionPrimitive(transform, Scale), this.objectManager);
 
             //do we want an actor type for CDCR?
-            collidablePrimitiveObject.ActorType = ActorType.CollidableActivatable;
+            collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
 
             //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
             collidablePrimitiveObject.Transform = transform;
@@ -446,10 +446,10 @@ namespace GDApp
 
             //make the collidable primitive
             collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                new BoxCollisionPrimitive(transform), this.objectManager);
+                new SphereCollisionPrimitive(transform, Scale), this.objectManager);
 
             //do we want an actor type for CDCR?
-            collidablePrimitiveObject.ActorType = ActorType.CollidableActivatable;
+            collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
 
             //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
             collidablePrimitiveObject.Transform = transform;
@@ -482,8 +482,42 @@ namespace GDApp
             
         }
 
+        private void InitializeCollidableDecorators()
+        {
+            //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
+            BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
+
+            //get the archetypal primitive object from the factory
+            PrimitiveObject archetypeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
+
+            //set the texture that all clones will have
+            archetypeObject.EffectParameters.Texture = this.textureDictionary["checkerboard"];
+
+            Transform3D transform;
+            CollidablePrimitiveObject collidablePrimitiveObject;
+
+            for (int i = 0; i < 10; i++)
+            {
+                //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
+                transform = new Transform3D(new Vector3(5 * i + 10, 2, 0), Vector3.Zero, new Vector3(2, 2, 2), Vector3.UnitX, Vector3.UnitY);
+
+                //make the collidable primitive
+                collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
+                    new BoxCollisionPrimitive(transform), this.objectManager);
+
+                //do we want an actor type for CDCR?
+                collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
+
+                //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
+                collidablePrimitiveObject.Transform = transform;
+
+                this.objectManager.Add(collidablePrimitiveObject);
+            }
+        }
+
         private void InitializeArena(int arenaScale)
         {
+            //arenaScale = 60;
             //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
 
@@ -503,10 +537,10 @@ namespace GDApp
 
                 //make the collidable primitive
                 collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                    new BoxCollisionPrimitive(transform), this.objectManager);
+                    new SphereCollisionPrimitive(transform, arenaScale), this.objectManager);
 
                 //do we want an actor type for CDCR?
-                collidablePrimitiveObject.ActorType = ActorType.CollidableActivatable;
+                collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
 
                 //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
                 collidablePrimitiveObject.Transform = transform;

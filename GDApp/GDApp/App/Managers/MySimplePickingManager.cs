@@ -27,9 +27,9 @@ namespace GDApp
                 //sends an event every minTimeBetweenSoundEventInMs seconds
                 if (totalElapsedTimeInMs > minTimeBetweenSoundEventInMs)
                 {
-                    object[] additionalParametersA = { "boing" };
-                    EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersA));
-                    totalElapsedTimeInMs = 0;
+                    //object[] additionalParametersA = { "boing" };
+                    //EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersA));
+                    //totalElapsedTimeInMs = 0;
 
                     //or tell a UI mouse something
                     float distanceToObject = (float)Math.Round(Vector3.Distance(this.ManagerParameters.CameraManager.ActiveCamera.Transform.Translation,
