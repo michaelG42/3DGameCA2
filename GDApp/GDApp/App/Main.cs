@@ -388,98 +388,74 @@ namespace GDApp
 
             //collidable objects that we can turn on when we hit them
             InitializeCollidableAISpheres(arenaScale);
-            InitializeArena(arenaScale);
+
+            //InitializeArena(arenaScale);
         }
 
         private void InitializeCollidableAISpheres(int arenaScale)
         {
-            //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.UnLitColoredPrimitivesEffectID] as BasicEffectParameters;
 
-            //get the archetypal primitive object from the factory
             PrimitiveObject archetypeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.ColoredSphere, effectParameters);
-
-            //set the texture that all clones will have
-            //archetypeObject.EffectParameters.Texture = this.textureDictionary["checkerboard"];
 
             Transform3D transform;
             CollidablePrimitiveObject collidablePrimitiveObject;
-            IController controller;
+
+            // to get position on edge of Arena
             float position = arenaScale - (arenaScale / 4);
+            // Scale players with Arena
             float Scale = arenaScale / 5;
 
-                //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
-            transform = new Transform3D(new Vector3(position, Scale/2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
-
-                //make the collidable primitive
-                collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                    new SphereCollisionPrimitive(transform, Scale), this.objectManager);
-
-                //do we want an actor type for CDCR?
-                collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
-
-                //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
-                collidablePrimitiveObject.Transform = transform;
-
-            collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.DarkRed;
-
-                this.objectManager.Add(collidablePrimitiveObject);
-
-            transform = new Transform3D(new Vector3(-position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
+            #region Red Enemy
+            transform = new Transform3D(new Vector3(position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
 
             //make the collidable primitive
             collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                new SphereCollisionPrimitive(transform, Scale), this.objectManager);
+                    new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
 
-            //do we want an actor type for CDCR?
-            collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
+            //CHANGE to Collidable enemy
+            collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
 
-            //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
+            collidablePrimitiveObject.Transform = transform;
+
+            collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.DarkRed;
+
+            this.objectManager.Add(collidablePrimitiveObject);
+            #endregion
+
+            #region Blue Enemy
+
+            transform = new Transform3D(new Vector3(-position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
+
+            collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
+                new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
+
+            collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
+
             collidablePrimitiveObject.Transform = transform;
 
             collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.DarkBlue;
 
             this.objectManager.Add(collidablePrimitiveObject);
 
+            #endregion
 
+            #region Yellow Enemy
             transform = new Transform3D(new Vector3(0, Scale / 2 + 2, -position), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
 
             //make the collidable primitive
             collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                new SphereCollisionPrimitive(transform, Scale), this.objectManager);
+                new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
 
             //do we want an actor type for CDCR?
-            collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
+            collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
 
             //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
             collidablePrimitiveObject.Transform = transform;
             collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.Yellow;
-            this.objectManager.Add(collidablePrimitiveObject);
+            this.objectManager.Add(collidablePrimitiveObject); 
+            #endregion
 
-            //#region Translation Lerp
-            ////if we want to make the boxes move (or do something else) then just attach a controller
-            //controller = new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation,
-            //    new Vector3(0, 0, 1), new TrigonometricParameters(10, 0.1f, 180 * (i - 5)));
-            //collidablePrimitiveObject.AttachController(controller);
-            //#endregion
-
-            //#region Sine Lerp
-            ////lets add a color lerp controller but set it not to play until the player touches it
-            //controller = new ColorSineLerpController("colorControl1", ControllerType.SineColorLerp,
-            //    Color.Red, Color.Green, new TrigonometricParameters(1, 0.2f, 180 * (5)));
-            ////lets turn off the color lerp until we touch the box - see PlayerCollidablePrimitiveObject::HandleCollisionResponse()
-            //controller.SetControllerPlayStatus(PlayStatusType.Off);
-            //collidablePrimitiveObject.AttachController(controller);
-            //#endregion
-
-            #region Pickup Controller
-            controller = new PickupController("pickupControl1", ControllerType.PickupDisappear, 15, 0.02f * Vector3.UnitY, 0.99f * Vector3.One, -0.02f, 0.1f);
-                controller.SetControllerPlayStatus(PlayStatusType.Off);
-                collidablePrimitiveObject.AttachController(controller);
-                #endregion
-
-                
-            
         }
 
         private void InitializeCollidableDecorators()
@@ -517,49 +493,42 @@ namespace GDApp
 
         private void InitializeArena(int arenaScale)
         {
-            //arenaScale = 60;
-            //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
 
-            //get the archetypal primitive object from the factory
             PrimitiveObject archetypeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCylinder, effectParameters);
 
             //set the texture that all clones will have
-            archetypeObject.EffectParameters.Texture = this.textureDictionary["checkerboard"];
+            archetypeObject.EffectParameters.Texture = this.textureDictionary["ml"];
 
             Transform3D transform;
             CollidablePrimitiveObject collidablePrimitiveObject;
-           // IController controller;
+            // IController controller;
 
+            transform = new Transform3D(new Vector3(0, 0.5f, 0), Vector3.Zero, new Vector3(arenaScale, 1, arenaScale), Vector3.UnitX, Vector3.UnitY);
 
-                //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
-                transform = new Transform3D(new Vector3(0, 0.5f, 0), Vector3.Zero, new Vector3(arenaScale, 1, arenaScale), Vector3.UnitX, Vector3.UnitY);
+            collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
+            new SphereCollisionPrimitive(transform, arenaScale), this.objectManager);
 
-                //make the collidable primitive
-                collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                    new SphereCollisionPrimitive(transform, arenaScale), this.objectManager);
+            collidablePrimitiveObject.ActorType = ActorType.CollidableGround;
 
-                //do we want an actor type for CDCR?
-                collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
+            collidablePrimitiveObject.Transform = transform;
 
-                //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
-                collidablePrimitiveObject.Transform = transform;
+            this.objectManager.Add(collidablePrimitiveObject);
 
-                //collidablePrimitiveObject.Transform.ScaleBy(new Vector3(15, 0.5f, 15));
+            #region Tried Arena as zone, to say if player is not in zone apply gravity
+            //SimpleZoneObject simpleZoneObject = null;
+            //ICollisionPrimitive collisionPrimitive = null;
 
-                //#region Scale Lerp
-                ////if we want to make the boxes move (or do something else) then just attach a controller
-                //controller = new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation,
-                //    new Vector3(0, 0, 1), new TrigonometricParameters(10, 0.1f, 180 * (i - 5)));
-                //collidablePrimitiveObject.AttachController(controller);
-                //#endregion
+            //collisionPrimitive = new SphereCollisionPrimitive(transform, arenaScale);
 
+            //simpleZoneObject = new SimpleZoneObject(AppData.SwitchToThirdPersonZoneID, ActorType.Zone, transform,
 
+            //StatusType.Drawn | StatusType.Update, collisionPrimitive);
 
-                this.objectManager.Add(collidablePrimitiveObject);
-            
+            //this.objectManager.Add(simpleZoneObject); 
+            #endregion
+
         }
-
 
         private void InitializeNonCollidableGround(int worldScale)
         {
@@ -601,7 +570,7 @@ namespace GDApp
             Transform3D transform = new Transform3D(new Vector3(0, Scale / 2 + 2, position), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
 
             //instanciate a box primitive at player position
-            BoxCollisionPrimitive collisionPrimitive = new BoxCollisionPrimitive(transform);
+            SphereCollisionPrimitive collisionPrimitive = new SphereCollisionPrimitive(transform, Scale / 2);
 
             //make the player object and store as field for use by the 3rd person camera - see camera initialization
             this.playerCollidablePrimitiveObject = new PlayerCollidablePrimitiveObject(primitiveObject, collisionPrimitive,

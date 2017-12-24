@@ -27,6 +27,7 @@ namespace GDLibrary
         UIDynamicText,    //i.e. a HUD text that changes over time e.g. time remaining - 84, 83, 83,...
 
         //new with JigLibX
+        CollidableEnemy,
         CollidableGround,
         CollidableDecorator,    //e.g. a table, lampshade
         CollidableProp,         //i.e. an interactable prop related to game narrative or game state e.g. door

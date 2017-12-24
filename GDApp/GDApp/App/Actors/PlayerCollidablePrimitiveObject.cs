@@ -49,8 +49,10 @@ namespace GDLibrary
         {
             //read any input and store suggested increments
             HandleInput(gameTime);
-           HandleAcceleration(gameTime);
-            ApplyGravity(gameTime);
+            HandleAcceleration(gameTime);
+
+          // ApplyGravity(gameTime);
+
             //have we collided with something?
             this.Collidee = CheckCollisions(gameTime);
 
@@ -109,23 +111,31 @@ namespace GDLibrary
                     //when we touch get a particular controller to start
                     collidee.SetAllControllers(PlayStatusType.Play, x => x.GetControllerType().Equals(ControllerType.PickupDisappear));
                 }
+                else if (collidee.ActorType == ActorType.CollidableEnemy)
+                {
+                    this.acceleration = -this.acceleration;
+                }
+                else if (collidee.ActorType == ActorType.CollidableGround)
+                {
+                    //this.Collidee = null;
+                }
             }
         }
 
         protected void HandleAcceleration(GameTime gameTime)
         {
-           // this.acceleration.Y = -0.1f;
-            this.Transform.TranslateBy(acceleration );
-
+           this.Transform.TranslateIncrement = this.acceleration;
+           // this.Transform.TranslateBy(this.acceleration);
         }
 
         protected void ApplyGravity(GameTime gameTime)
         {
             //Gravity
-            this.Transform.TranslateIncrement
-    = -this.Transform.Up * gameTime.ElapsedGameTime.Milliseconds
-            * 0.02f;
+                this.Transform.TranslateIncrement
+        = -this.Transform.Up * gameTime.ElapsedGameTime.Milliseconds
+                * 0.02f;
         }
+
         protected override void HandleInput(GameTime gameTime)
         {
 
