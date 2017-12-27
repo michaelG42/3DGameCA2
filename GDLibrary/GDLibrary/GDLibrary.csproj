@@ -110,6 +110,7 @@
     <Compile Include="Curve\Curve3D.cs" />
     <Compile Include="Curve\Transform2DCurve.cs" />
     <Compile Include="Curve\Transform3DCurve.cs" />
+    <Compile Include="Enums\AxisDirectionType.cs" />
     <Compile Include="Enums\BillboardType.cs" />
     <Compile Include="Enums\AnimationStateType.cs" />
     <Compile Include="Factory\PrimitiveFactory.cs" />

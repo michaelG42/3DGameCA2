@@ -11,6 +11,7 @@ namespace GDLibrary
         //the object that im colliding with
         private Actor collidee;
         private ObjectManager objectManager;
+        private Vector3 velocity;
 
         #endregion
 
@@ -46,6 +47,8 @@ namespace GDLibrary
             }
         }
 
+        public Vector3 Velocity { get => velocity; set => velocity = value; }
+
         #endregion
 
         //used to draw collidable primitives that have a texture i.e. use VertexPositionColor vertex types only
@@ -57,6 +60,7 @@ namespace GDLibrary
             this.collisionPrimitive = collisionPrimitive;
             //unusual to pass this in but we use it to test for collisions - see Update();
             this.objectManager = objectManager;
+            this.velocity = new Vector3(0, 0, 0);
         }
 
         //used to make a collidable primitives from an existing PrimitiveObject (i.e. the type returned by the PrimitiveFactory
@@ -67,6 +71,7 @@ namespace GDLibrary
             this.collisionPrimitive = collisionPrimitive;
             //unusual to pass this in but we use it to test for collisions - see Update();
             this.objectManager = objectManager;
+            this.velocity = new Vector3(0, 0, 0);
         }
 
 
@@ -125,7 +130,7 @@ namespace GDLibrary
             //dont test for collision against yourself - remember the player is in the object manager list too!
             if (this != actor3D)
             {
-                if (actor3D is CollidablePrimitiveObject)
+                if (actor3D is CollidablePrimitiveObject && actor3D.ActorType != ActorType.CollidableGround)
                 {
                     CollidablePrimitiveObject collidableObject = actor3D as CollidablePrimitiveObject;
                     if (this.CollisionPrimitive.Intersects(collidableObject.CollisionPrimitive, this.Transform.TranslateIncrement))

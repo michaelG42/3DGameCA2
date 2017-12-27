@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Media;
 using System;
+//using GDApp.App.Actors;
 
 /*
  * Diffuse color not pickup up when drawing primitive objects
@@ -70,6 +71,8 @@ namespace GDApp
         private ManagerParameters managerParameters;
         private MyPrimitiveFactory primitiveFactory;
         private PlayerCollidablePrimitiveObject playerCollidablePrimitiveObject;
+
+        private PlayerCollidablePrimitiveObject[] enemys;
         private PrimitiveDebugDrawer collisionSkinDebugDrawer;
 
 
@@ -349,7 +352,7 @@ namespace GDApp
         {
             //add debug info in top left hand corner of the screen
             this.debugDrawer = new DebugDrawer(this, this.managerParameters, spriteBatch,
-                this.fontDictionary["debug"], Color.Black, new Vector2(5, 5), this.eventDispatcher, StatusType.Off);
+                this.fontDictionary["debug"], Color.White, new Vector2(5, 5), this.eventDispatcher, StatusType.Off);
             this.debugDrawer.DrawOrder = 1;
             Components.Add(this.debugDrawer);
 
@@ -389,11 +392,13 @@ namespace GDApp
             //collidable objects that we can turn on when we hit them
             InitializeCollidableAISpheres(arenaScale);
 
-            //InitializeArena(arenaScale);
+            InitializeArena(arenaScale);
         }
 
         private void InitializeCollidableAISpheres(int arenaScale)
         {
+
+            this.enemys = new PlayerCollidablePrimitiveObject[3];
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.UnLitColoredPrimitivesEffectID] as BasicEffectParameters;
 
             PrimitiveObject archetypeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.ColoredSphere, effectParameters);
@@ -407,36 +412,37 @@ namespace GDApp
             float Scale = arenaScale / 5;
 
             #region Red Enemy
-            transform = new Transform3D(new Vector3(position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
+            InitializeCollidableEnemy(arenaScale);
+            //transform = new Transform3D(new Vector3(position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
 
-            //make the collidable primitive
-            collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                    new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
+            ////make the collidable primitive
+            //collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
+            //        new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
 
-            //CHANGE to Collidable enemy
-            collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
+            ////CHANGE to Collidable enemy
+            //collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
 
-            collidablePrimitiveObject.Transform = transform;
+            //collidablePrimitiveObject.Transform = transform;
 
-            collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.DarkRed;
+            //collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.DarkRed;
 
-            this.objectManager.Add(collidablePrimitiveObject);
+            //this.objectManager.Add(collidablePrimitiveObject);
             #endregion
 
             #region Blue Enemy
+           // InitializeCollidableEnemy2(arenaScale);
+            //transform = new Transform3D(new Vector3(-position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
 
-            transform = new Transform3D(new Vector3(-position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
+            //collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
+            //    new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
 
-            collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
+            //collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
 
-            collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
+            //collidablePrimitiveObject.Transform = transform;
 
-            collidablePrimitiveObject.Transform = transform;
+            //collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.DarkBlue;
 
-            collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.DarkBlue;
-
-            this.objectManager.Add(collidablePrimitiveObject);
+            //this.objectManager.Add(collidablePrimitiveObject);
 
             #endregion
 
@@ -574,7 +580,7 @@ namespace GDApp
 
             //make the player object and store as field for use by the 3rd person camera - see camera initialization
             this.playerCollidablePrimitiveObject = new PlayerCollidablePrimitiveObject(primitiveObject, collisionPrimitive,
-                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed, AppData.PlayerRotationSpeed);
+                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed);
             this.playerCollidablePrimitiveObject.ActorType = ActorType.Player;
             this.playerCollidablePrimitiveObject.Transform = transform;
             this.playerCollidablePrimitiveObject.EffectParameters.DiffuseColor = Color.ForestGreen;
@@ -588,6 +594,40 @@ namespace GDApp
             //add to the object manager
             this.objectManager.Add(playerCollidablePrimitiveObject);
         }
+
+        private void InitializeCollidableEnemy(int arenaScale)
+        {
+
+            float position = arenaScale - (arenaScale / 4);
+            float Scale = arenaScale / 5;
+
+
+            //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
+            BasicEffectParameters effectParameters = this.effectDictionary[AppData.UnLitColoredPrimitivesEffectID] as BasicEffectParameters;
+
+            //get the archetypal primitive object from the factory
+            PrimitiveObject primitiveObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.ColoredSphere, effectParameters);
+
+            //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
+            Transform3D transform = new Transform3D(new Vector3(position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
+
+            //instanciate a box primitive at player position
+            SphereCollisionPrimitive collisionPrimitive = new SphereCollisionPrimitive(transform, Scale / 2);
+
+            //make the player object and store as field for use by the 3rd person camera - see camera initialization
+            this.enemys[0] = new PlayerCollidablePrimitiveObject(primitiveObject, collisionPrimitive,
+                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed);
+            this.enemys[0].ActorType = ActorType.CollidableEnemy;
+            this.enemys[0].Transform = transform;
+            this.enemys[0].EffectParameters.DiffuseColor = Color.Red;
+
+            //do we want a texture?
+            // playerCollidablePrimitiveObject.EffectParameters.Texture = this.textureDictionary["ml"];
+
+            //add to the object manager
+            this.objectManager.Add(this.enemys[0]);
+        }
+
 
         private void InitializeNonCollidableSkyBox(int worldScale)
         {

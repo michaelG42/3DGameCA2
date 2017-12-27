@@ -61,6 +61,7 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App\Actors\EnemyCollidablePrimativeObject.cs" />
     <Compile Include="App\Actors\PlayerCollidablePrimitiveObject.cs" />
     <Compile Include="App\Factory\MyPrimitiveFactory.cs" />
     <Compile Include="App\Game\MyGameStateManager.cs" />
