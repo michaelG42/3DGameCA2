@@ -16,7 +16,7 @@ namespace GDLibrary
         private bool bThirdPersonZoneEventSent;
         private ManagerParameters managerParameters;
 
-        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, collisionVector;
+        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector;//, collisionVector;
 
         private bool positionsInitialized;
         private bool initialPosSet;
@@ -44,7 +44,7 @@ namespace GDLibrary
             this.initialPosSet = false;
             this.stoppingDistance = 12;
             this.currentDirection = 0;
-            this.collisionVector = Vector3.Zero;
+            this.CollisionVector = Vector3.Zero;
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -62,7 +62,7 @@ namespace GDLibrary
             this.initialPosSet = false;
             this.stoppingDistance = 12;
             this.currentDirection = 0;
-            this.collisionVector = Vector3.Zero;
+            this.CollisionVector = Vector3.Zero;
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -101,7 +101,7 @@ namespace GDLibrary
             //below when we hit against a zone
             if (this.Collidee == null)
             {
-                this.collisionVector = Vector3.Zero;
+                this.CollisionVector = Vector3.Zero;
                 ApplyInput(gameTime);
             }
 
@@ -109,7 +109,7 @@ namespace GDLibrary
             base.Update(gameTime);
             this.previousPosition = this.currentPosition;
             this.previousDirection = this.currentDirection;
-
+            // 
         }
 
         protected void InitalizePositions()
@@ -163,9 +163,12 @@ namespace GDLibrary
                 {
                     // Vector3 temp = (collidee as CollidablePrimitiveObject).Velocity;
                     //this.Velocity = -this.Velocity;
-
+                    Console.WriteLine("Collision with  " + collidee.ActorType);
                     //(collidee as CollidablePrimitiveObject).Velocity = this.Velocity * 0.8f;
-                    this.collisionVector = CalculateCollisionVector();
+
+                    //Problem where if a player wasnt moving it wouldnt detect collsion
+                    //Solved by setting the other players collisionVelocity, rather than this.collisionVelocity
+                    (collidee as CollidablePrimitiveObject).CollisionVector = CalculateCollisionVector((collidee as CollidablePrimitiveObject).Velocity);
 
                 }
                 else if (collidee.ActorType == ActorType.CollidableGround)
@@ -182,13 +185,20 @@ namespace GDLibrary
             //Console.WriteLine("Current position " + this.currentPosition);
             //Console.WriteLine("Previous Position" + this.previousPosition);
             //Console.WriteLine("C - P" + (this.currentPosition - this.previousPosition));
-            //Console.WriteLine("Acceleration is " + this.accelerationVector);
+            if(this.ActorType == ActorType.CollidableEnemy)
+            {
+                Console.WriteLine("Acceleration is " + this.accelerationVector);
+                Console.WriteLine("Velocity is " + this.Velocity);
+            }
+
 
             // this.Velocity = (this.currentPosition - this.previousPosition) + this.accelerationVector;
 
             //Will Calculate Velocity By subtracting Previous position from Current position, Then add the acceleration Vector
+            //this.Velocity = Vector3.Zero;
             this.Velocity = CalculateVelocity() + this.accelerationVector;
             this.Transform.TranslateIncrement = (this.Velocity);
+            
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -244,13 +254,13 @@ namespace GDLibrary
         protected Vector3 CalculateVelocity()
         {
             Vector3 TempVelocity;
-            if (this.collisionVector == Vector3.Zero)
+            if (this.CollisionVector == Vector3.Zero)
             {
                 TempVelocity = (this.currentPosition - this.previousPosition);
             }
             else
             {
-                TempVelocity = this.collisionVector;
+                TempVelocity = this.CollisionVector;
             }
            
 
@@ -267,9 +277,9 @@ namespace GDLibrary
             return TempVelocity;
         }
 
-        protected Vector3 CalculateCollisionVector()
+        protected Vector3 CalculateCollisionVector(Vector3 ColideeVelocity)
         {
-            return -this.Velocity;
+            return (ColideeVelocity + this.Velocity) + this.Velocity/4;
         }
         protected void Stop(GameTime gameTime)
         {
@@ -313,7 +323,7 @@ namespace GDLibrary
 
             //Console.WriteLine("Acceleration in calculate velocity " + this.accelerationVector);
             this.accelerationVector = (new Vector3(XVelocity, 0, ZVelocity));
-            Console.WriteLine("Acceleration in calculate velocity " + this.accelerationVector);
+            //Console.WriteLine("Acceleration in calculate velocity " + this.accelerationVector);
         }
 
         #region AI Movement
@@ -324,55 +334,114 @@ namespace GDLibrary
             //Console.WriteLine("Previous Position is " + this.previousPosition);
             //Console.WriteLine("Current Position is " + this.currentPosition);
             //Console.WriteLine("Stopping distance is " + this.stoppingDistance);
-            // Console.WriteLine("Current Velocity is " + this.Velocity);
+            //Console.WriteLine("Current Velocity is " + this.Velocity);
             //Console.WriteLine("is in middle " + IsInMiddle());
 
             //GetDirectionToMove just returns 1 or -1 to accelerate the appropriate direction
+            MoveToTarget(gameTime, Vector3.Zero);
 
-            SetStoppingDistance();
-            int direction = GetDirectionToMove(this.Transform.Translation.X);
+
+            //int direction = GetDirectionToMove(this.Transform.Translation.X);
 
             //Console.WriteLine("Stopping distance is " + this.stoppingDistance);
-            if (!IsInMiddle())
+            //if (!IsInMiddle())
+            //{
+            //    if (Math.Abs(this.Transform.Translation.X) <= this.stoppingDistance)
+            //    {
+
+            //        // Console.WriteLine("Accelerating Away from middle");
+            //        //Pass in -direction to decelerate(Accelerate opposite direction)
+
+            //        //Accelerate away from middle
+            //        Accelerate(gameTime, AxisDirectionType.X, -direction);
+
+            //    }
+            //    else
+            //    {
+            //        //Console.WriteLine("Accelerating to middle");
+            //        //Accelerate to middle
+            //        Accelerate(gameTime, AxisDirectionType.X, direction);
+            //    }
+            //}
+            //else
+            //{
+            //    //Console.WriteLine("STOPPING");
+            //    Stop(gameTime, -direction);
+            //}
+
+
+        }
+        protected void MoveToTarget(GameTime gameTime, Vector3 target)
+        {
+            int directionX = GetDirectionToMove(this.currentPosition.X, target.X);
+            int directionZ = GetDirectionToMove(this.currentPosition.Z, target.Z);
+
+            float accelerationX;// = Accelerate(gameTime, AxisDirectionType.X, directionX);
+            float accelerationZ;// = Accelerate(gameTime, AxisDirectionType.Z, directionZ);
+
+            SetInitialPosition(target);
+            float stoppingDistanceX = getStoppingDistance(target, AxisDirectionType.X);
+            float stoppingDistanceZ = getStoppingDistance(target, AxisDirectionType.Z);
+
+            //this.stoppingDistance = 2;
+            //if(target == Vector3.Zero)
+            //{
+            //    SetStoppingDistance();
+            //}
+
+            //Console.WriteLine("stopping distance X is " + stoppingDistanceX);
+            if (IsOnTarget(target, 10f))
             {
-                if (Math.Abs(this.Transform.Translation.X) <= this.stoppingDistance)
-                {
-
-                    // Console.WriteLine("Accelerating Away from middle");
-                    //Pass in -direction to decelerate(Accelerate opposite direction)
-
-                    //Accelerate away from middle
-                    Accelerate(gameTime, AxisDirectionType.X, -direction);
-
-                }
-                else
-                {
-                    //Console.WriteLine("Accelerating to middle");
-                    //Accelerate to middle
-                    Accelerate(gameTime, AxisDirectionType.X, direction);
-                }
+                Console.WriteLine("Is on target");
+                //Stop slows down the object until it stops
+                //passing in -direction accelerates the object away from the direction it is currently moving
+                Stop(gameTime, -directionX, -directionZ);
             }
             else
             {
-                //Console.WriteLine("STOPPING");
-                Stop(gameTime, -direction);
+                Console.WriteLine("Not on target");
+                if (Math.Abs(this.currentPosition.X) <= stoppingDistanceX)
+                {
+                    //Accelerate away from target
+                    //direction is minus to accelerate opposite direction
+                    accelerationX = Accelerate(gameTime, -directionX, AxisDirectionType.X);
+                }
+                else
+                {
+                    //Accelerate to Target
+                    accelerationX = Accelerate(gameTime, directionX, AxisDirectionType.X);
+                }
+
+                if (Math.Abs(this.currentPosition.Z) <= stoppingDistanceZ)
+                {
+                    //Accelerate away from target
+                    //direction is minus to accelerate opposite direction
+                    Console.WriteLine("Away from Z");
+                    accelerationZ = Accelerate(gameTime, -directionZ, AxisDirectionType.Z);
+                }
+                else
+                {
+                    //Accelerate to Target
+                    Console.WriteLine("Moving to Z");
+                    accelerationZ = Accelerate(gameTime, directionZ, AxisDirectionType.Z);
+                }
+
+
+                this.accelerationVector = (new Vector3(accelerationX, 0, accelerationZ));
             }
 
-            if ((!IsMovingToMiddle()) && this.initialPosSet)
-            {
-                this.initialPosSet = false;
-            }
+            Console.WriteLine("is moving to target " + IsMovingToTarget(target));
+
         }
 
-        protected int GetDirectionToMove(float position)
+        protected int GetDirectionToMove(float position, float target)
         {
-
-            Console.WriteLine("Position is " + position);
-            if (position > 0.01f)
+            //Console.WriteLine("Position is " + position);
+            if (position > target)
             {
                 return -1;
             }
-            else if (position < -0.01f)
+            else if (position < target)
             {
                 return 1;
             }
@@ -411,26 +480,65 @@ namespace GDLibrary
             return false;
         }
 
-        protected bool IsMovingToMiddle()
+        protected bool IsMovingToTarget(Vector3 target)
         {
-            if ((Math.Abs(this.previousPosition.X) - Math.Abs(this.currentPosition.X)) > 0)
+            //if the distance between the previous position is greater than
+            //the distance between the current positions
+            //object is moving towards target
+            if (Vector3.Distance(this.previousPosition, target)
+                > Vector3.Distance(this.currentPosition, target))
+            {
+                //is moving to target
+                return true;
+            }
+            //is not moving to target
+            return false;
+        }
+
+        protected bool IsOnTarget(Vector3 target, float distance)
+        {
+            //if the distance between the current position is less than
+            //the distance proivided
+            //object is Within provided distance of target
+            //this is used to tell the AI Sphere to stop when on target
+            if (Vector3.Distance(this.currentPosition, target) <= distance)
             {
                 return true;
             }
             return false;
         }
 
-        protected void SetInitialPosition()
+        protected void SetInitialPosition(Vector3 target)
         {
-            this.initialPosition = this.currentPosition;
+            if ((!IsMovingToTarget(target)) && this.initialPosSet)
+            {
+                this.initialPosSet = false;
+            }
+
+            if (HasChangedDirection() && IsMovingToTarget(target) && (!this.initialPosSet))
+            {
+                this.initialPosition = this.currentPosition;
+                this.initialPosSet = true;
+            }
+            
         }
 
-        protected float GetStoppingDistance(AxisDirectionType axis)
+        protected float getStoppingDistance(Vector3 target, AxisDirectionType axis)
         {
-            float stoppingDistance = 0;
+            float stoppingDistance;
 
-            stoppingDistance = (Math.Abs(this.initialPosition.X) / 2) + 1;
-
+            switch (axis)
+            {
+                case AxisDirectionType.X:
+                    stoppingDistance = (Math.Abs(this.initialPosition.X) / 2) + 1;
+                    break;
+                case AxisDirectionType.Z:
+                    stoppingDistance = (Math.Abs(this.initialPosition.Z) / 2) + 1;
+                    break;
+                default:
+                    stoppingDistance = 0;
+                    break;
+            }
             return stoppingDistance;
         }
 
@@ -443,70 +551,61 @@ namespace GDLibrary
             return false;
         }
 
-        protected void SetStoppingDistance()
+        protected float Accelerate(GameTime gameTime, int direction, AxisDirectionType axis)
         {
-            if (HasChangedDirection() && IsMovingToMiddle() && (!this.initialPosSet))
-            {
-                SetInitialPosition();
-                this.stoppingDistance = GetStoppingDistance(AxisDirectionType.X);
-                this.initialPosSet = true;
-            }
+            //if(axis == AxisDirectionType.X && this.Velocity.X < 0.001f)
+            //{
+            //    return 0;
+            //}
+
+            //if (axis == AxisDirectionType.Z && this.Velocity.Z < 0.001f)
+            //{
+            //    return 0;
+            //}
+
+            return (this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds) * direction;
         }
 
-        protected void Accelerate(GameTime gameTime, AxisDirectionType axis, int direction)
+        protected void Stop(GameTime gameTime, int directionX, int directionZ)
         {
-            //Get Players Velocity in X and Y direction
-            float VelocityX;
-            float Position;
-            switch (axis)
-            {
-                case AxisDirectionType.X:
-                    VelocityX = this.Velocity.X;
-                    Position = this.Transform.Translation.X;
-                    break;
-                case AxisDirectionType.Z:
-                    VelocityX = this.Velocity.Z;
-                    Position = this.Transform.Translation.Z;
-                    break;
-                default:
-                    VelocityX = 0;
-                    Position = 0;
-                    break;
-            }
+            //gets current velocity on the x and z axis
+            float VelocityX = CalculateVelocity().X;
+            float VelocityZ = CalculateVelocity().Z;
 
-            VelocityX += (this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds) * direction;
-
-            this.Velocity = (new Vector3(VelocityX, 0, 0));
-
-        }
-
-        protected void Stop(GameTime gameTime, int direction)
-        {
-
-
-            float VelocityX = this.Velocity.X;
-
+            //if velocity is very small
+            //set it to 0 and it will stop
             if (Math.Abs(VelocityX) <= 0.001f)
             {
-
                 VelocityX = 0;
             }
             else
             {
-                VelocityX += (this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds) * direction;
+                //Otherwise Decelerate until small enough to stop
+                VelocityX = (this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds) * directionX;
             }
 
-            this.Velocity = (new Vector3(VelocityX, 0, 0));
+            //same as above for z axis
+            if (Math.Abs(VelocityZ) <= 0.001f)
+            {
+                VelocityZ = 0;
+            }
+            else
+            {
+                VelocityZ= (this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds) * directionZ;
+            }
+
+            //set the new acceleratiopn vector
+            this.accelerationVector = (new Vector3(VelocityX, 0, VelocityZ));
         }
 
         protected void ApplyDisplacmentVector(Vector3 ColideeVector)
         {
 
-            Console.WriteLine("Vectoor is" + ColideeVector);
+            //Console.WriteLine("Vectoor is" + ColideeVector);
 
             Vector3 DisplacmentVector = (-ColideeVector - this.Velocity);
 
-            this.Velocity = -this.Velocity;
+            this.accelerationVector = -this.Velocity;
 
 
         }

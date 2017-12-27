@@ -446,21 +446,21 @@ namespace GDApp
 
             #endregion
 
-            #region Yellow Enemy
-            transform = new Transform3D(new Vector3(0, Scale / 2 + 2, -position), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
+            //#region Yellow Enemy
+            //transform = new Transform3D(new Vector3(0, Scale / 2 + 2, -position), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
 
-            //make the collidable primitive
-            collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
+            ////make the collidable primitive
+            //collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
+            //    new SphereCollisionPrimitive(transform, Scale / 2), this.objectManager);
 
-            //do we want an actor type for CDCR?
-            collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
+            ////do we want an actor type for CDCR?
+            //collidablePrimitiveObject.ActorType = ActorType.CollidableEnemy;
 
-            //set the position otherwise the boxes will all have archetypeObject.Transform positional properties
-            collidablePrimitiveObject.Transform = transform;
-            collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.Yellow;
-            this.objectManager.Add(collidablePrimitiveObject); 
-            #endregion
+            ////set the position otherwise the boxes will all have archetypeObject.Transform positional properties
+            //collidablePrimitiveObject.Transform = transform;
+            //collidablePrimitiveObject.EffectParameters.DiffuseColor = Color.Yellow;
+            //this.objectManager.Add(collidablePrimitiveObject); 
+            //#endregion
 
         }
 

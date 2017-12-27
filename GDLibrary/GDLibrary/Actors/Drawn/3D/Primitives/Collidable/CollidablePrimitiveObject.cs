@@ -11,7 +11,7 @@ namespace GDLibrary
         //the object that im colliding with
         private Actor collidee;
         private ObjectManager objectManager;
-        private Vector3 velocity;
+        private Vector3 velocity, collisionVector;
 
         #endregion
 
@@ -48,6 +48,7 @@ namespace GDLibrary
         }
 
         public Vector3 Velocity { get => velocity; set => velocity = value; }
+        public Vector3 CollisionVector { get => collisionVector; set => collisionVector = value; }
 
         #endregion
 
