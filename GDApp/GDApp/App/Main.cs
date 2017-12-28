@@ -247,6 +247,7 @@ namespace GDApp
             //this.textureDictionary.Load("Assets/Textures/Skybox/front");
             //this.textureDictionary.Load("Assets/Textures/Foliage/Trees/tree2");
             this.textureDictionary.Load("Assets/Textures/Enviornment/Lava");
+            this.textureDictionary.Load("Assets/Textures/Enviornment/VolcanoWall");
             this.textureDictionary.Load("Assets/Textures/Enviornment/Space");
 
 
@@ -600,7 +601,7 @@ namespace GDApp
             PrimitiveObject Skybox = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
             PrimitiveObject clonePlane = null;
             //set texture once so all clones have the same
-            Skybox.EffectParameters.Texture = this.textureDictionary["Space"];
+            Skybox.EffectParameters.Texture = this.textureDictionary["VolcanoWall"];
 
             #region Skybox
 

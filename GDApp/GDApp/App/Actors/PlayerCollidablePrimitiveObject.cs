@@ -9,6 +9,7 @@ namespace GDLibrary
     {
         #region Fields
         private float accelerationSpeed;
+        private float gravity;
         private int currentDirection;
         private int previousDirection;
         private Keys[] moveKeys;
@@ -19,6 +20,7 @@ namespace GDLibrary
 
         private bool positionsInitialized;
         private bool initialPosSet;
+        private bool inGame;
 
 
         //private Vector3 acceleration;
@@ -44,7 +46,8 @@ namespace GDLibrary
             this.initialPosSet = false;
             this.currentDirection = 0;
             this.CollisionVector = Vector3.Zero;
-
+            this.gravity = 0;
+            this.inGame = true;
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -62,7 +65,8 @@ namespace GDLibrary
             this.initialPosSet = false;
             this.currentDirection = 0;
             this.CollisionVector = Vector3.Zero;
-
+            this.gravity = 0;
+            this.inGame = true;
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -77,21 +81,30 @@ namespace GDLibrary
             this.currentPosition = this.Transform.Translation;
             this.currentDirection = getCurrentDirection();
             //read any input and store suggested increments
-            if (this.ActorType == ActorType.Player)
+            if(inGame)
             {
-                //If It is A Human Player get Input from Keyboard
-                HandleInput(gameTime);
+                if (this.ActorType == ActorType.Player)
+                {
+                    //If It is A Human Player get Input from Keyboard
+                    HandleInput(gameTime);
+                }
+                else
+                {
+                    //Else its AI Call Move to Calculate Velocity etc
+                    Move(gameTime);
+                }
             }
             else
             {
-                //Else its AI Call Move to Calculate Velocity etc
-                Move(gameTime);
+                Stop(gameTime);
             }
 
+
             //Adds Acceleration to the current velocity
+            //ApplyGravity();
             HandleAcceleration(gameTime);
 
-            //ApplyGravity(gameTime);
+            
 
             //have we collided with something?
             this.Collidee = CheckCollisions(gameTime);
@@ -113,6 +126,8 @@ namespace GDLibrary
             //Used for calculating velocity and if directoin has changed
             this.previousPosition = this.currentPosition;
             this.previousDirection = this.currentDirection;
+
+            Console.WriteLine("Current Pos is " + this.currentPosition);
         }
 
         protected void InitalizePositions()
@@ -191,13 +206,63 @@ namespace GDLibrary
             this.Transform.TranslateIncrement = (this.Velocity);
         }
 
-        protected void ApplyGravity(GameTime gameTime)
+        protected float ApplyGravity()
         {
             //Gravity
             //Always applies a downward force unless colliding with Ground
-            this.Transform.TranslateIncrement
-    = -this.Transform.Up * gameTime.ElapsedGameTime.Milliseconds
-            * 0.002f;
+            
+            if(GetDistanceToTarget(new Vector3(0, 0.5f, 0)) > 32f)
+            {
+                this.inGame = false;
+                if (this.currentPosition.Y > 2.5f)
+                {
+                    this.gravity += -0.0025f;
+                }
+                else if(this.currentPosition.Y > 0.75f)
+                {
+                    this.gravity += 0.00075f;
+                }
+                else if(this.currentPosition.Y > -2f)
+                {
+                    if (this.gravity < -0.01f)
+                    {
+                        this.gravity += 0.0020f;
+                    }
+                    else
+                    {
+                        this.gravity = -0.01f;
+                    }
+                }
+                //else
+                //{
+
+                //}
+                //else
+                //{
+                //    if(this.gravity < -0.001f)
+                //    {
+
+
+                //        if (this.currentPosition.Y > 1.8f)
+                //        {
+                //            
+                //        }
+                //        else
+                //        {
+                //            this.gravity += 0.0010f;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        this.gravity = -0.01f;
+                //    }
+
+                //}
+
+
+            }
+            Console.WriteLine("Gravity is " + this.gravity);
+            return gravity;
         }
 
         protected override void HandleInput(GameTime gameTime)
@@ -269,6 +334,9 @@ namespace GDLibrary
             {
                 TempVelocity.Z = 0;
             }
+
+            TempVelocity.Y = ApplyGravity();
+
             return TempVelocity;
         }
 
