@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GDLibrary
 {
@@ -12,15 +14,26 @@ namespace GDLibrary
         private float gravity;
         private int currentDirection;
         private int previousDirection;
+        private int currentPlayers;
+        private int previousPlayers;
         private Keys[] moveKeys;
         private bool bThirdPersonZoneEventSent;
         private ManagerParameters managerParameters;
 
         private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector;//, collisionVector;
 
+        private PlayerCollidablePrimitiveObject[] targets;
+        private int targetIndex;
+        private Vector3 target;
+        private bool targetSet;
+
         private bool positionsInitialized;
         private bool initialPosSet;
         private bool inGame;
+
+        public PlayerCollidablePrimitiveObject[] Targets { get => targets; set => targets = value; }
+
+
 
 
         //private Vector3 acceleration;
@@ -48,6 +61,7 @@ namespace GDLibrary
             this.CollisionVector = Vector3.Zero;
             this.gravity = 0;
             this.inGame = true;
+            this.previousPlayers = 3;
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -67,6 +81,7 @@ namespace GDLibrary
             this.CollisionVector = Vector3.Zero;
             this.gravity = 0;
             this.inGame = true;
+            this.previousPlayers = 3;
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -77,7 +92,7 @@ namespace GDLibrary
                 InitalizePositions();
                 this.positionsInitialized = true;
             }
-
+            this.currentPlayers = GetPlayersInGame();
             this.currentPosition = this.Transform.Translation;
             this.currentDirection = getCurrentDirection();
             //read any input and store suggested increments
@@ -126,8 +141,8 @@ namespace GDLibrary
             //Used for calculating velocity and if directoin has changed
             this.previousPosition = this.currentPosition;
             this.previousDirection = this.currentDirection;
-
-            Console.WriteLine("Current Pos is " + this.currentPosition);
+            this.previousPlayers = this.currentPlayers;
+            //Console.WriteLine("Current Pos is " + this.currentPosition);
         }
 
         protected void InitalizePositions()
@@ -190,6 +205,8 @@ namespace GDLibrary
                     //setting the enemys acceleration vector to -this.acceleration vector means the AI will alway accelerate towards the collision
                     //this is what most human players would do to avoid being sent flying off really far
                     (collidee as PlayerCollidablePrimitiveObject).accelerationVector = -CalculateCollisionVector((collidee as CollidablePrimitiveObject).Velocity);
+
+                    this.targetSet = false;
                 }
                 else if (collidee.ActorType == ActorType.CollidableGround)
                 {
@@ -233,35 +250,9 @@ namespace GDLibrary
                         this.gravity = -0.01f;
                     }
                 }
-                //else
-                //{
-
-                //}
-                //else
-                //{
-                //    if(this.gravity < -0.001f)
-                //    {
-
-
-                //        if (this.currentPosition.Y > 1.8f)
-                //        {
-                //            
-                //        }
-                //        else
-                //        {
-                //            this.gravity += 0.0010f;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        this.gravity = -0.01f;
-                //    }
-
-                //}
-
 
             }
-            Console.WriteLine("Gravity is " + this.gravity);
+            //Console.WriteLine("Gravity is " + this.gravity);
             return gravity;
         }
 
@@ -354,32 +345,55 @@ namespace GDLibrary
         #region AI Movement
 
         protected void Move(GameTime gameTime)
-        { 
+        {
             //accelerate to target
-            Vector3 target = Vector3.Zero;
-
-            //gets the min distance to begin stopping before taget so it doesnt overshoot
-            SetInitialPosition(target);
-            float stoppingDistance = getStoppingDistance(target);
-
-            //if moving to target and distance to target is less than stopping distance then begin stopping
-            if (IsMovingToTarget(target) && (Math.Abs(GetDistanceToTarget(target)) <= stoppingDistance))
+            if(NumPlayersChanged() || IsOnTarget(2))
             {
-                Stop(gameTime);
+                this.targetSet = false;
+            }
+            if (!targetSet)
+            {
+                Console.WriteLine("Setting target");
+                setTarget();
             }
             else
             {
-                //Otherwise we alwways want to be acceleratin to the target
-                if(!IsOnTarget(target, 1))
+                if(target == Vector3.Zero)
                 {
-                    AccelerateToTarget(gameTime, Vector3.Zero);
+
+                    SetInitialPosition(target);
+                    float stoppingDistance = getStoppingDistance(target);
+
+                    //if moving to target and distance to target is less than stopping distance then begin stopping
+                    if (IsMovingToTarget(target) && (Math.Abs(GetDistanceToTarget(target)) <= stoppingDistance))
+                    {
+                        Stop(gameTime);
+                    }
+                    else
+                    {
+                        //Otherwise we alwways want to be acceleratin to the target
+                        if (!IsOnTarget(1))
+                        {
+                            AccelerateToTarget(gameTime, target);
+                        }
+                        else
+                        {
+                            Stop(gameTime);
+                        }
+
+                    }
+
                 }
                 else
                 {
-                    Stop(gameTime);
+                    AccelerateToTarget(gameTime, target);
                 }
-                
+
             }
+
+            //Console.WriteLine("Target is " + target);
+            //gets the min distance to begin stopping before taget so it doesnt overshoot
+
 
         }
 
@@ -437,7 +451,7 @@ namespace GDLibrary
 
             //Since middle is 0,0 just get the absolute value of position
             //assuming the middle has a radious of 5
-            if (Math.Abs(Xpos) < 5 && Math.Abs(Zpos) < 5)
+            if (Math.Abs(Xpos) < 12 && Math.Abs(Zpos) < 12)
             {
                 return true;
             }
@@ -465,30 +479,18 @@ namespace GDLibrary
             return Vector3.Distance(this.currentPosition, target);
         }
 
-        //protected bool IsAcceleratingToTarget(Vector3 target)
-        //{
-        //    //bool AcceleratingToTargetX = false;
-        //    //bool AcceleratingToTargetZ = false;
+        protected float GetDistanceBetweenTargets(Vector3 target1, Vector3 target2)
+        {
+            return Vector3.Distance(target1, target2);
+        }
 
-        //    //if (target.X > 0 && this.accelerationVector.X > 0)
-        //    //{
-
-        //    //}
-        //    //else if(target.X < 0 && this.accelerationVector.X < 0)
-        //    //{
-
-        //    //}
-
-        //    //return AcceleratingToTarget;
-        //}
-
-        protected bool IsOnTarget(Vector3 target, float distance)
+        protected bool IsOnTarget(float distance)
         {
             //if the distance between the current position is less than
             //the distance proivided
             //object is Within provided distance of target
             //this is used to tell the AI Sphere to stop when on target
-            if (Math.Abs(Vector3.Distance(this.currentPosition, target)) <= distance)
+            if (Math.Abs(Vector3.Distance(this.currentPosition, this.target)) <= distance)
             {
                 return true;
             }
@@ -585,7 +587,108 @@ namespace GDLibrary
             this.accelerationVector = (new Vector3(VelocityX, 0, VelocityZ));
         }
 
+        protected void setTarget()
+        {
+            int playersInGame = GetPlayersInGame();
 
+            if (playersInGame == 1)
+            {
+                targetIndex = GetLastPlayerIndex();
+            }
+            else if(!IsInMiddle())
+            {
+                targetIndex = -1;
+            }
+            else if (playersInGame >= 2)
+            {
+                targetIndex = GetFurthestFromMiddle();
+            }
+            else
+            {
+                targetIndex = -1;                
+            }
+
+            if(targetIndex == -1)
+            {
+                this.target = Vector3.Zero;
+
+            }
+            else
+            {
+                this.target = targets[targetIndex].currentPosition;
+            }
+            this.targetSet = true;
+        }
+
+        protected int GetPlayersInGame()
+        {
+            int count = 0;
+
+            if(targets != null)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (targets[i].inGame)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        protected int GetLastPlayerIndex()
+        {
+            int index = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (targets[i].inGame)
+                {
+                    index = i;
+                }
+            }
+            return index;
+        }
+
+        protected int GetFurthestFromMiddle()
+        {
+
+            float max = 0;
+
+            int PlayerIndex = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (targets[i].inGame)
+                {
+                    max = targets[0].GetDistanceToTarget(Vector3.Zero);
+                }
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (targets[i].inGame)
+                {
+                    if (targets[i].GetDistanceToTarget(Vector3.Zero) > max)
+                    {
+                        max = targets[i].GetDistanceToTarget(Vector3.Zero);
+                        PlayerIndex = i;
+                    }
+                }
+            }
+            return PlayerIndex;
+        }
+
+        protected bool NumPlayersChanged()
+        {
+            if(this.previousPlayers != this.currentPlayers)
+            {
+                return true;
+            }
+            return false;
+        }
         #endregion
     }
 }

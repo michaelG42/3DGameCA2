@@ -167,6 +167,7 @@ namespace GDLibrary
         {
             foreach (Actor3D actor in list)
                 Add(actor);
+
         }
 
         public void Add(Actor3D actor)

@@ -102,7 +102,7 @@ namespace GDApp
             int numberOfGamePadPlayers = 1;
 
             //set the title
-            Window.Title = "SPACE SUMO";
+            Window.Title = "SUMO";
 
             //EventDispatcher
             InitializeEventDispatcher();
@@ -696,27 +696,27 @@ namespace GDApp
         private void InitializeCameraDemo(Integer2 screenResolution)
         {
             #region Flight Camera
-            Transform3D transform = new Transform3D(new Vector3(0, 5, 20), -Vector3.UnitZ, Vector3.UnitY);
+            Transform3D transform = new Transform3D(new Vector3(0, 45, 65), new Vector3(0, -0.6f, -0.8f), Vector3.UnitY);
 
             IController controller = new FlightCameraController("fcc", ControllerType.FirstPerson, AppData.CameraMoveKeys,
                 AppData.CameraMoveSpeed, AppData.CameraStrafeSpeed, AppData.CameraRotationSpeed, this.managerParameters);
 
-            InitializeCamera(screenResolution, AppData.FlightCameraID, this.viewPortDictionary["full viewport"], transform, controller, 0);
+            InitializeCamera(screenResolution, AppData.FlightCameraID, this.viewPortDictionary["full viewport"], transform, null, 0);
             #endregion
 
             #region Third Person Camera
-            if (this.playerCollidablePrimitiveObject != null) //if demo 4 then we have player to track
-            {
-                //position is irrelevant since its based on tracking a player object
-                transform = Transform3D.Zero;
+            //if (this.playerCollidablePrimitiveObject != null) //if demo 4 then we have player to track
+            //{
+            //    //position is irrelevant since its based on tracking a player object
+            //    transform = Transform3D.Zero;
 
-                controller = new ThirdPersonController("tpc", ControllerType.ThirdPerson, this.playerCollidablePrimitiveObject,
-                    AppData.CameraThirdPersonDistance, AppData.CameraThirdPersonScrollSpeedDistanceMultiplier,
-                    AppData.CameraThirdPersonElevationAngleInDegrees, AppData.CameraThirdPersonScrollSpeedElevationMultiplier,
-                    LerpSpeed.Medium, LerpSpeed.Fast, this.mouseManager);
+            //    controller = new ThirdPersonController("tpc", ControllerType.ThirdPerson, this.playerCollidablePrimitiveObject,
+            //        AppData.CameraThirdPersonDistance, AppData.CameraThirdPersonScrollSpeedDistanceMultiplier,
+            //        AppData.CameraThirdPersonElevationAngleInDegrees, AppData.CameraThirdPersonScrollSpeedElevationMultiplier,
+            //        LerpSpeed.Medium, LerpSpeed.Fast, this.mouseManager);
 
-                InitializeCamera(screenResolution, AppData.ThirdPersonCameraID, this.viewPortDictionary["full viewport"], transform, controller, 0);
-            }
+            //    InitializeCamera(screenResolution, AppData.ThirdPersonCameraID, this.viewPortDictionary["full viewport"], transform, controller, 0);
+            //}
             #endregion
 
         }
@@ -1032,6 +1032,33 @@ namespace GDApp
         }
         #endregion
 
+        protected void updateTargets()
+        {
+            PlayerCollidablePrimitiveObject[] enemey0targets = new PlayerCollidablePrimitiveObject[3];
+            PlayerCollidablePrimitiveObject[] enemey1targets = new PlayerCollidablePrimitiveObject[3];
+            PlayerCollidablePrimitiveObject[] enemey2targets = new PlayerCollidablePrimitiveObject[3];
+
+
+            enemey0targets[0] = playerCollidablePrimitiveObject;
+            enemey1targets[0] = playerCollidablePrimitiveObject;
+            enemey2targets[0] = playerCollidablePrimitiveObject;
+
+            enemey0targets[1] = enemys[1];
+            enemey0targets[2] = enemys[2];
+
+            enemey1targets[1] = enemys[0];
+            enemey1targets[2] = enemys[2];
+
+            enemey2targets[1] = enemys[0];
+            enemey2targets[2] = enemys[1];
+
+            enemys[0].Targets = enemey0targets;
+
+            enemys[1].Targets = enemey1targets;
+
+            enemys[2].Targets = enemey2targets;
+
+        }
         #region Content, Update, Draw        
         protected override void LoadContent()
         {
@@ -1070,6 +1097,7 @@ namespace GDApp
             DoCameraCycle();
 #endif
 
+            updateTargets();
             base.Update(gameTime);
         }
 
