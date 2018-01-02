@@ -131,7 +131,7 @@ namespace GDApp
 
             //Add Camera(s)
             InitializeCameraDemo(screenResolution);
-
+            InitializeIntroCamera(screenResolution);
             //Publish Start Event(s)
             StartGame();
 
@@ -296,23 +296,24 @@ namespace GDApp
         }
         private void LoadCurvesAndRails()
         {
-            int cameraHeight = 5;
 
             #region Curves
             //create the camera curve to be applied to the track controller
-            Transform3DCurve curveA = new Transform3DCurve(CurveLoopType.Oscillate); //experiment with other CurveLoopTypes
-            curveA.Add(new Vector3(40, cameraHeight, 80), -Vector3.UnitX, Vector3.UnitY, 0); //start position
-            curveA.Add(new Vector3(0, 10, 60), -Vector3.UnitZ, Vector3.UnitY, 4);
-            curveA.Add(new Vector3(0, 40, 0), -Vector3.UnitY, -Vector3.UnitZ, 8); //curve mid-point
-            curveA.Add(new Vector3(0, 10, 60), -Vector3.UnitZ, Vector3.UnitY, 12);
-            curveA.Add(new Vector3(40, cameraHeight, 80), -Vector3.UnitX, Vector3.UnitY, 16); //end position - same as start for zero-discontinuity on cycle
+
+            Transform3DCurve curveA = new Transform3DCurve(CurveLoopType.Linear); //experiment with other CurveLoopTypes
+            curveA.Add(new Vector3(-40, 80, 0), new Vector3(1, -2f, 0f), Vector3.UnitY, 0); //start position
+            curveA.Add(new Vector3(-100, 15, 0), new Vector3(1, -0.2f, 0f), Vector3.UnitY, 5);
+            curveA.Add(new Vector3(0, 100, -120), new Vector3(0, -0.6f, 0.8f), Vector3.UnitY, 9); 
+            curveA.Add(new Vector3(60, 25, 0), new Vector3(-1, -0.4f, 0), Vector3.UnitY, 13);
+            curveA.Add(new Vector3(5, 40, 60), new Vector3(-0.1f, -0.6f, -0.7f), Vector3.UnitY, 17);
+            curveA.Add(new Vector3(0, 45, 65), new Vector3(0, -0.6f, -0.8f), Vector3.UnitY, 19); //end position
             //add to the dictionary
-            this.curveDictionary.Add("unique curve name 1", curveA);
+            this.curveDictionary.Add("introCurveCamera", curveA);
             #endregion
 
             #region Rails
             //create the track to be applied to the non-collidable track camera 1
-            this.railDictionary.Add("rail1 - parallel to x-axis", new RailParameters("rail1 - parallel to x-axis", new Vector3(-80, 10, 40), new Vector3(80, 10, 40)));
+            //this.railDictionary.Add("rail1 - parallel to x-axis", new RailParameters("rail1 - parallel to x-axis", new Vector3(-80, 10, 40), new Vector3(80, 10, 40)));
             #endregion
 
         }
@@ -422,6 +423,8 @@ namespace GDApp
             transform = new Transform3D(new Vector3(0, Scale / 2 + 2, -position), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
             InitializeCollidableEnemy(arenaScale, 2, transform, Color.Yellow);
             #endregion
+
+            updateTargets();
 
         }
 
@@ -682,9 +685,9 @@ namespace GDApp
         #endregion
 
         #region Initialize Cameras
-        private void InitializeCamera(Integer2 screenResolution, string id, Viewport viewPort, Transform3D transform, IController controller, float drawDepth)
+        private void InitializeCamera(Integer2 screenResolution, string id, Viewport viewPort, Transform3D transform, IController controller, float drawDepth, StatusType statusType)
         {
-            Camera3D camera = new Camera3D(id, ActorType.Camera, transform, ProjectionParameters.StandardShallowSixteenNine, viewPort, drawDepth, StatusType.Update);
+            Camera3D camera = new Camera3D(id, ActorType.Camera, transform, ProjectionParameters.StandardShallowSixteenNine, viewPort, drawDepth, statusType);
 
             if (controller != null)
                 camera.AttachController(controller);
@@ -701,7 +704,7 @@ namespace GDApp
             IController controller = new FlightCameraController("fcc", ControllerType.FirstPerson, AppData.CameraMoveKeys,
                 AppData.CameraMoveSpeed, AppData.CameraStrafeSpeed, AppData.CameraRotationSpeed, this.managerParameters);
 
-            InitializeCamera(screenResolution, AppData.FlightCameraID, this.viewPortDictionary["full viewport"], transform, null, 0);
+            InitializeCamera(screenResolution, AppData.FlightCameraID, this.viewPortDictionary["full viewport"], transform, null, 0, StatusType.Update);
             #endregion
 
             #region Third Person Camera
@@ -721,6 +724,23 @@ namespace GDApp
 
         }
 
+
+        private void InitializeIntroCamera(Integer2 screenResolution)
+        {
+            
+            Transform3D transform = null;
+            IController controller = null;
+            string id = "";
+            string viewportDictionaryKey = "full viewport";
+
+            //track camera 1
+            id = "IntroCurveCamera";
+            transform = new Transform3D(new Vector3(0, 0, 20), -Vector3.UnitZ, Vector3.UnitY);
+            controller = new CurveController(id + " controller", ControllerType.Track, this.curveDictionary["introCurveCamera"], PlayStatusType.Play);
+            InitializeCamera(screenResolution, id, this.viewPortDictionary[viewportDictionaryKey], transform, controller, 0, StatusType.Off);
+        }
+
+
         #endregion
 
         #region Events
@@ -739,7 +759,7 @@ namespace GDApp
             EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.MainMenu));
 
             //publish an event to set the camera
-            object[] additionalEventParamsB = { "flight camera 1"};
+            object[] additionalEventParamsB = { AppData.FlightCameraID };
             EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
             //we could also just use the line below, but why not use our event dispatcher?
             //this.cameraManager.SetActiveCamera(x => x.ID.Equals("collidable first person camera 1"));
@@ -1097,16 +1117,16 @@ namespace GDApp
             DoCameraCycle();
 #endif
 
-            updateTargets();
+            
             base.Update(gameTime);
         }
 
         private void DoCameraCycle()
         {
-            if (this.keyboardManager.IsFirstKeyPress(Keys.F1))
-            {
-                EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
-            }
+            //if (this.keyboardManager.IsFirstKeyPress(Keys.F1))
+            //{
+            //    EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
+            //}
         }
 
         private void DoDebugToggleDemo()

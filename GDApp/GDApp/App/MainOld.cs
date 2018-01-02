@@ -144,7 +144,7 @@ namespace GDApp
                 LoadDemoEight(); //turning on the controllers of objects that we collide with
 
             //Add Camera(s)
-            InitializeCameraDemo(screenResolution);
+            InitializeIntroCamera(screenResolution);
 
             //Publish Start Event(s)
             StartGame();
@@ -317,7 +317,7 @@ namespace GDApp
             curveA.Add(new Vector3(0, 10, 60), -Vector3.UnitZ, Vector3.UnitY, 12);
             curveA.Add(new Vector3(40, cameraHeight, 80), -Vector3.UnitX, Vector3.UnitY, 16); //end position - same as start for zero-discontinuity on cycle
             //add to the dictionary
-            this.curveDictionary.Add("unique curve name 1", curveA);
+            this.curveDictionary.Add("introCurve", curveA);
             #endregion
 
             #region Rails
@@ -886,6 +886,21 @@ namespace GDApp
             }
             #endregion
 
+        }
+
+        private void InitializeIntroCamera(Integer2 screenResolution)
+        {
+            //InitializeIntroCamera(screenResolution);
+            Transform3D transform = null;
+            IController controller = null;
+            string id = "";
+            string viewportDictionaryKey = "full viewport";
+
+            //track camera 1
+            id = "non-collidable track 1";
+            transform = new Transform3D(new Vector3(0, 0, 20), -Vector3.UnitZ, Vector3.UnitY);
+            controller = new CurveController(id + " controller", ControllerType.Track, this.curveDictionary["introCurve"], PlayStatusType.Play);
+            InitializeCamera(screenResolution, id, this.viewPortDictionary[viewportDictionaryKey], transform, controller, 0);
         }
 
         #endregion

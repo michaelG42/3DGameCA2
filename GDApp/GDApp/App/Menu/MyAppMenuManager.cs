@@ -6,6 +6,7 @@ namespace GDApp
 {
     public class MyAppMenuManager : MenuManager
     {
+        private bool firstStart = true;
         public MyAppMenuManager(Game game, MouseManager mouseManager, KeyboardManager keyboardManager, CameraManager cameraManager,
             SpriteBatch spriteBatch, EventDispatcher eventDispatcher, 
             StatusType statusType) : base(game, mouseManager, keyboardManager, cameraManager, spriteBatch, eventDispatcher, statusType)
@@ -112,10 +113,17 @@ namespace GDApp
         {
             //will be received by the menu manager and screen manager and set the menu to be shown and game to be paused
             EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.MainMenu));
+            if (firstStart)
+            {
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
+
+                this.firstStart = false;
+            }
         }
 
         private void DoExit()
         {
+
             this.Game.Exit();
         }
 

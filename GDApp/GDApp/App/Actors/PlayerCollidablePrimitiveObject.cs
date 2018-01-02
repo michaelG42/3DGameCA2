@@ -10,6 +10,9 @@ namespace GDLibrary
     public class PlayerCollidablePrimitiveObject : CollidablePrimitiveObject
     {
         #region Fields
+        private float timer = 4;         //Initialize a 4 second timer
+        private const float TIMER = 4;
+        private float elapsed;
         private float accelerationSpeed;
         private float gravity;
         private int currentDirection;
@@ -32,8 +35,6 @@ namespace GDLibrary
         private bool inGame;
 
         public PlayerCollidablePrimitiveObject[] Targets { get => targets; set => targets = value; }
-
-
 
 
         //private Vector3 acceleration;
@@ -87,6 +88,8 @@ namespace GDLibrary
 
         public override void Update(GameTime gameTime)
         {
+            this.elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            this.timer -= elapsed;
             if (!positionsInitialized)
             {
                 InitalizePositions();
@@ -342,18 +345,23 @@ namespace GDLibrary
             return (ColideeVelocity + this.Velocity) + this.Velocity/4;
         }
 
-        #region AI Movement
+        #region AI Logic
 
         protected void Move(GameTime gameTime)
         {
             //accelerate to target
-            if(NumPlayersChanged() || IsOnTarget(2))
+            if(NumPlayersChanged())
             {
                 this.targetSet = false;
             }
+            if (this.timer < 0)
+            {
+                this.targetSet = false;
+                this.timer = TIMER;   //Reset Timer
+            }
             if (!targetSet)
             {
-                Console.WriteLine("Setting target");
+                //Console.WriteLine("Setting target");
                 setTarget();
             }
             else

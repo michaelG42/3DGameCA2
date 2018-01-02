@@ -23,6 +23,7 @@ namespace GDLibrary
 
         //a delegate is basically a list - the list contains a pointer to a function - this function pointer comes from the object wishing to be notified when the event occurs.
         public delegate void CameraEventHandler(EventData eventData);
+        public delegate void SetIntroCameraEventHandler(EventData eventData);
         public delegate void MenuEventHandler(EventData eventData);
         public delegate void ScreenEventHandler(EventData eventData);
         public delegate void OpacityEventHandler(EventData eventData);
@@ -39,6 +40,7 @@ namespace GDLibrary
         
         //an event is either null (not yet happened) or non-null - when the event occurs the delegate reads through its list and calls all the listening functions
         public event CameraEventHandler CameraChanged;
+        public event SetIntroCameraEventHandler SetIntroCamera;
         public event MenuEventHandler MenuChanged;
         public event ScreenEventHandler ScreenChanged;
         public event OpacityEventHandler OpacityChanged;

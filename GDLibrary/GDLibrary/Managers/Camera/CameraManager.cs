@@ -58,6 +58,7 @@ namespace GDLibrary
         protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
         {
             eventDispatcher.CameraChanged += EventDispatcher_CameraChanged;
+            //eventDispatcher.CameraReset += EventDispatcher_CameraReset;
         }
 
         protected void EventDispatcher_CameraChanged(EventData eventData)
@@ -73,6 +74,8 @@ namespace GDLibrary
                 SetActiveCamera(x => x.ID.Equals(eventData.AdditionalParameters[0] as string));
             }
         }
+
+
         #endregion
 
         public void Add(Camera3D camera)
@@ -108,6 +111,7 @@ namespace GDLibrary
         public void CycleActiveCamera()
         {
             this.ActiveCameraIndex = this.activeCameraIndex + 1;
+            this.cameraList[this.activeCameraIndex].StatusType = StatusType.Update;
         }
 
         //sorts cameras by Camera3D::drawDepth - used for PIP screen layout - see ScreenManager
