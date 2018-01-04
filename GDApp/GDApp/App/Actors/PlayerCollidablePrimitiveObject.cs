@@ -34,6 +34,8 @@ namespace GDLibrary
         private bool initialPosSet;
         private bool inGame;
 
+        private GameState gameState;
+
         public PlayerCollidablePrimitiveObject[] Targets { get => targets; set => targets = value; }
 
 
@@ -49,7 +51,7 @@ namespace GDLibrary
         public PlayerCollidablePrimitiveObject(string id, ActorType actorType, Transform3D transform, EffectParameters effectParameters,
             StatusType statusType, IVertexData vertexData, ICollisionPrimitive collisionPrimitive,
             ManagerParameters managerParameters,
-            Keys[] moveKeys, float accelerationSpeed)
+            Keys[] moveKeys, float accelerationSpeed, EventDispatcher eventDispatcher)
             : base(id, actorType, transform, effectParameters, statusType, vertexData, collisionPrimitive, managerParameters.ObjectManager)
         {
             this.moveKeys = moveKeys;
@@ -63,12 +65,14 @@ namespace GDLibrary
             this.gravity = 0;
             this.inGame = true;
             this.previousPlayers = 3;
+            this.gameState = GameState.NotStarted;
+            RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
 
         //used to make a player collidable primitives from an existing PrimitiveObject (i.e. the type returned by the PrimitiveFactory
         public PlayerCollidablePrimitiveObject(PrimitiveObject primitiveObject, ICollisionPrimitive collisionPrimitive,
-                                ManagerParameters managerParameters, Keys[] moveKeys, float accelerationSpeed)
+                                ManagerParameters managerParameters, Keys[] moveKeys, float accelerationSpeed, EventDispatcher eventDispatcher)
             : base(primitiveObject, collisionPrimitive, managerParameters.ObjectManager)
         {
             this.moveKeys = moveKeys;
@@ -83,6 +87,8 @@ namespace GDLibrary
             this.gravity = 0;
             this.inGame = true;
             this.previousPlayers = 3;
+            this.gameState = GameState.NotStarted;
+            RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -99,7 +105,7 @@ namespace GDLibrary
             this.currentPosition = this.Transform.Translation;
             this.currentDirection = getCurrentDirection();
             //read any input and store suggested increments
-            if(inGame)
+            if(inGame && (this.gameState == GameState.Level1 || this.gameState == GameState.Level2))
             {
                 if (this.ActorType == ActorType.Player)
                 {
@@ -146,6 +152,16 @@ namespace GDLibrary
             this.previousDirection = this.currentDirection;
             this.previousPlayers = this.currentPlayers;
             //Console.WriteLine("Current Pos is " + this.currentPosition);
+        }
+
+        protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
+        {
+            eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
+        }
+        protected void EventDispatcher_GameStateChanged(EventData eventData)
+        {
+
+            this.gameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
         }
 
         protected void InitalizePositions()
@@ -254,6 +270,10 @@ namespace GDLibrary
                     }
                 }
 
+            }
+            if(this.currentPosition.Y < -10)
+            {
+                this.ObjectManager.Remove(this);
             }
             //Console.WriteLine("Gravity is " + this.gravity);
             return gravity;

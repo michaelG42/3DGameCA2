@@ -61,12 +61,12 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App\Actors\EnemyCollidablePrimativeObject.cs" />
     <Compile Include="App\Actors\PlayerCollidablePrimitiveObject.cs" />
     <Compile Include="App\Factory\MyPrimitiveFactory.cs" />
     <Compile Include="App\Game\MyGameStateManager.cs" />
     <Compile Include="App\MainOld.cs" />
     <Compile Include="App\Managers\MySimplePickingManager.cs" />
+    <Compile Include="App\Managers\Timer.cs" />
     <Compile Include="App\Menu\MyAppMenuManager.cs" />
     <Compile Include="App\Data\AppData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

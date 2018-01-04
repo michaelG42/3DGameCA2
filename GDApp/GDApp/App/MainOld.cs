@@ -646,7 +646,7 @@ namespace GDApp
 
             //make the player object and store as field for use by the 3rd person camera - see camera initialization
             this.playerCollidablePrimitiveObject = new PlayerCollidablePrimitiveObject(primitiveObject, collisionPrimitive,
-                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed);
+                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed, this.eventDispatcher);
             this.playerCollidablePrimitiveObject.ActorType = ActorType.Player;
             this.playerCollidablePrimitiveObject.Transform = transform;
 

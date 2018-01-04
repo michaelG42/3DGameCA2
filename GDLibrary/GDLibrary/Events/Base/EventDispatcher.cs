@@ -37,7 +37,9 @@ namespace GDLibrary
         public delegate void MouseEventHandler(EventData eventData);
         public delegate void VideoEventHandler(EventData eventData);
         public delegate void DebugEventHandler(EventData eventData);
-        
+
+        public delegate void GameStateEventHandler(EventData eventData);
+
         //an event is either null (not yet happened) or non-null - when the event occurs the delegate reads through its list and calls all the listening functions
         public event CameraEventHandler CameraChanged;
         public event SetIntroCameraEventHandler SetIntroCamera;
@@ -54,7 +56,9 @@ namespace GDLibrary
         public event MouseEventHandler MouseChanged;
         public event VideoEventHandler VideoChanged;
         public event DebugEventHandler DebugChanged;
-        
+
+        public event GameStateEventHandler GameStateChanged;
+
 
 
         public EventDispatcher(Game game, int initialSize)
@@ -153,6 +157,10 @@ namespace GDLibrary
                     OnVideo(eventData);
                     break;
 
+                case EventCategoryType.GameState:
+                    OnGameState(eventData);
+                    break;
+
                 default:
                     break;
             }
@@ -178,6 +186,10 @@ namespace GDLibrary
             CameraChanged?.Invoke(eventData);
         }
 
+        protected virtual void OnGameState(EventData eventData)
+        {
+            GameStateChanged?.Invoke(eventData);
+        }
         //called when a screen event needs to be generated (e.g. change screen layout)
         protected virtual void OnScreen(EventData eventData)
         {

@@ -113,6 +113,7 @@
     <Compile Include="Enums\AxisDirectionType.cs" />
     <Compile Include="Enums\BillboardType.cs" />
     <Compile Include="Enums\AnimationStateType.cs" />
+    <Compile Include="Enums\GameState.cs" />
     <Compile Include="Factory\PrimitiveFactory.cs" />
     <Compile Include="GDDebug\Physics\BoundingBoxDrawer.cs" />
     <Compile Include="GDDebug\DebugDrawer.cs" />

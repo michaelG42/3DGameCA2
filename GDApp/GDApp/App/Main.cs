@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Media;
 using System;
+using GDApp.App.Managers;
+using GDLibrary.Enums;
 //using GDApp.App.Actors;
 
 /*
@@ -75,7 +77,10 @@ namespace GDApp
         private PlayerCollidablePrimitiveObject[] enemys;
         private PrimitiveDebugDrawer collisionSkinDebugDrawer;
 
-
+        private Timer timer;
+        private UITextObject GameStateText;
+        private UITextObject GameStateTextShadow;
+        private GameState gameState;
 
         #endregion
 
@@ -139,7 +144,7 @@ namespace GDApp
             InitializeDebugTextInfo();
             InitializeDebugCollisionSkinInfo();
 #endif
-
+            RegisterForEventHandling(this.eventDispatcher);
             base.Initialize();
         }
 
@@ -200,6 +205,9 @@ namespace GDApp
             this.pickingManager = new MySimplePickingManager(this, this.eventDispatcher, StatusType.Update, this.managerParameters);
             Components.Add(this.pickingManager);
 
+            //CountDown timer
+            this.timer = new Timer();
+       
         }
 
         private void LoadDictionaries()
@@ -287,6 +295,8 @@ namespace GDApp
             this.fontDictionary.Load("Assets/GDDebug/Fonts/debug");
 #endif
             this.fontDictionary.Load("Assets/Fonts/menu");
+            this.fontDictionary.Load("Assets/Fonts/GameText");
+
             this.fontDictionary.Load("Assets/Fonts/mouse");
             #endregion
 
@@ -544,7 +554,7 @@ namespace GDApp
 
             //make the player object and store as field for use by the 3rd person camera - see camera initialization
             this.playerCollidablePrimitiveObject = new PlayerCollidablePrimitiveObject(primitiveObject, collisionPrimitive,
-                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed);
+                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed, this.eventDispatcher);
             this.playerCollidablePrimitiveObject.ActorType = ActorType.Player;
             this.playerCollidablePrimitiveObject.Transform = transform;
             this.playerCollidablePrimitiveObject.EffectParameters.DiffuseColor = Color.ForestGreen;
@@ -578,7 +588,7 @@ namespace GDApp
 
             //make the player object and store as field for use by the 3rd person camera - see camera initialization
             this.enemys[index] = new PlayerCollidablePrimitiveObject(primitiveObject, collisionPrimitive,
-                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed);
+                this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed, this.eventDispatcher);
             this.enemys[index].ActorType = ActorType.CollidableEnemy;
             this.enemys[index].Transform = transform;
             this.enemys[index].EffectParameters.DiffuseColor = color;
@@ -943,6 +953,7 @@ namespace GDApp
         {
             InitializeUIMousePointer();
             //InitializeUIProgress();
+            InitializeGameStateText();
         }
 
         private void InitializeUIMousePointer()
@@ -1018,6 +1029,96 @@ namespace GDApp
             textureObject.AttachController(new UIProgressController(AppData.PlayerTwoProgressControllerID, ControllerType.UIProgress, startValue, 10, this.eventDispatcher));
             this.uiManager.Add(textureObject);
             #endregion
+        }
+
+        private void InitializeGameStateText()
+        {
+            string initalText = "GET READY";
+            Transform2D transform = null;
+
+            this.GameStateText = null;
+            Vector2 position = Vector2.Zero;
+
+            Vector2 scale = Vector2.Zero;
+            float verticalOffset = 60;
+
+            scale = Vector2.One;
+
+            #region Player 1 Progress Bar
+
+            //to center align horizontaly, it is half window width - lenght of text multiplyed by Scale and fontSize divided by 2
+            position = new Vector2((GraphicsDevice.Viewport.Width - (initalText.Length * 64)) /2, verticalOffset);
+
+            transform = new Transform2D(position, 0, scale,
+                Vector2.Zero, /*new Vector2(texture.Width/2.0f, texture.Height/2.0f),*/
+                new Integer2(1, 1));
+
+
+            this.GameStateText = new UITextObject("GameText",
+                    ActorType.UIDynamicText,
+                    StatusType.Drawn | StatusType.Update,
+                    transform, Color.Green,
+                    SpriteEffects.None,
+                    1,
+                    initalText,
+                    this.fontDictionary["GameText"]);
+
+
+            //textObject.AttachController(new UIProgressController(AppData.PlayerOneProgressControllerID, ControllerType.UIProgress, startValue, 10, this.eventDispatcher));
+            
+            this.uiManager.Add(this.GameStateText);
+
+            #endregion
+
+
+        }
+        private void UpdateGameText(GameTime gameTime)
+        {
+            switch(this.gameState)
+            {
+                case GameState.NotStarted:
+                    this.GameStateText.Text = "GET READY";
+                    break;
+                case GameState.CountDown:
+                    CountDown(gameTime);
+                    break;
+                case GameState.Level1:
+                    this.GameStateText.Text = "";
+                    break;
+                case GameState.Level2:
+                    break;
+                case GameState.Finished:
+                    break;
+
+            }
+
+        }
+        private void CountDown(GameTime gameTime)
+        {
+
+            
+            if(!this.timer.IsComplete)
+            {
+                this.timer.set(gameTime, 24);
+
+                if (this.timer.EndTime == 0)
+                {
+                    this.GameStateText.Text = "GO!";
+                }
+                else if (this.timer.EndTime > 0)
+                {
+                    this.timer.finish();
+                    object[] additionalParameters = { GameState.Level1 };
+                    EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+                }
+                else if(this.timer.EndTime >= -5)
+                {
+                    this.GameStateText.Text = this.timer.Display;
+                }
+            }
+
+            
+          
         }
         #endregion
 
@@ -1106,11 +1207,24 @@ namespace GDApp
 
         }
 
+        protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
+        {
+            eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
+        }
+        protected void EventDispatcher_GameStateChanged(EventData eventData)
+        {
+            
+            this.gameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
+        }
+
         protected override void Update(GameTime gameTime)
         {
             //exit using new gamepad manager
             if(this.gamePadManager != null && this.gamePadManager.IsPlayerConnected(PlayerIndex.One) && this.gamePadManager.IsButtonPressed(PlayerIndex.One, Buttons.Back))
                 this.Exit();
+
+            UpdateGameText(gameTime);
+
 
 #if DEMO
             DoDebugToggleDemo();
@@ -1156,8 +1270,10 @@ namespace GDApp
         {
 
             //    RasterizerState rasterizerState = new RasterizerState();
-    //rasterizerState.CullMode = CullMode.None;
-    //GraphicsDevice.RasterizerState = rasterizerState;
+            //rasterizerState.CullMode = CullMode.None;
+            //GraphicsDevice.RasterizerState = rasterizerState;
+
+
             GraphicsDevice.Clear(GoogleGreenColor);
 
             // TODO: Add your drawing code here

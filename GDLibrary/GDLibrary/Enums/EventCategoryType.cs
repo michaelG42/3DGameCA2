@@ -29,7 +29,8 @@ namespace GDLibrary
         ObjectPicking,   //used to notify listening objects that we have picked something with the mouse
         Mouse,              //used to send mouse related events e.g. set mouse position
         Video,
-        GlobalSound
+        GlobalSound,
+        GameState
         //all other categories of sender...
     }
 }

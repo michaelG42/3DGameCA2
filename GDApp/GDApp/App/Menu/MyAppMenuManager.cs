@@ -1,4 +1,5 @@
 ﻿using GDLibrary;
+using GDLibrary.Enums;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -117,6 +118,8 @@ namespace GDApp
             {
                 EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
 
+                object[] additionalParameters = { GameState.CountDown };
+                EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
                 this.firstStart = false;
             }
         }
