@@ -25,12 +25,10 @@ namespace GDLibrary
         #region Common
         public static int IndexMoveForward = 0;
         public static int IndexMoveBackward = 1;
-        public static int IndexRotateLeft = 2;
-        public static int IndexRotateRight = 3;
-        public static int IndexMoveJump = 4;
-        public static int IndexMoveCrouch = 5;
-        public static int IndexStrafeLeft = 6;
-        public static int IndexStrafeRight = 7;
+        public static int IndexMoveLeft = 2;
+        public static int IndexMoveRight = 3;
+        public static int IndexRotateLeft = 4;
+        public static int IndexRotateRight = 5;
         #endregion
 
         #region Camera
@@ -54,8 +52,8 @@ namespace GDLibrary
 
         public static readonly float CameraThirdPersonScrollSpeedDistanceMultiplier = 0.00125f;
         public static readonly float CameraThirdPersonScrollSpeedElevationMultiplier = 0.01f;
-        public static readonly float CameraThirdPersonDistance = 12;
-        public static readonly float CameraThirdPersonElevationAngleInDegrees = 150;
+        public static readonly float CameraThirdPersonDistance = 50;
+        public static readonly float CameraThirdPersonElevationAngleInDegrees = 160;
 
         public static readonly float SecurityCameraRotationSpeedSlow = 0.5f;
         public static readonly float SecurityCameraRotationSpeedMedium = 2 * SecurityCameraRotationSpeedSlow;
@@ -72,12 +70,12 @@ namespace GDLibrary
         public static readonly string PlayerOneID = "player1";
         public static readonly string PlayerTwoID = "player2";
 
-        public static readonly Keys[] PlayerOneMoveKeys = { Keys.U, Keys.J, Keys.H, Keys.K, Keys.Y, Keys.I, Keys.N, Keys.M};
+        public static readonly Keys[] PlayerOneMoveKeys = { Keys.W, Keys.S, Keys.A, Keys.D, Keys.Left,Keys.Right};
         public static readonly Keys[] PlayerTwoMoveKeys = { Keys.NumPad8, Keys.NumPad5, Keys.NumPad4, Keys.NumPad6, Keys.NumPad7, Keys.NumPad9, Keys.NumPad2, Keys.NumPad3 };
         public static readonly float PlayerMoveSpeed = 0.0002f;
         public static readonly float PlayerAcceleration = 0.0002f;
         public static readonly float PlayerStrafeSpeed = 0.7f * PlayerMoveSpeed;
-        public static readonly float PlayerRotationSpeed = 0.08f;
+        public static readonly float PlayerRotationSpeed = 0.05f;
         public static readonly float PlayerRadius = 1.5f;
         public static readonly float PlayerHeight = 4.5f;
         public static readonly float PlayerMass = 25;
@@ -100,7 +98,7 @@ namespace GDLibrary
 
         #region Mouse
         //defines how much the mouse has to move in pixels before a movement is registered - see MouseManager::HasMoved()
-        public static readonly float MouseSensitivity = 1;
+        public static readonly float MouseSensitivity = 10;
 
         //always ensure that we start picking OUTSIDE the collidable first person camera radius - otherwise we will always pick ourself!
         public static readonly float PickStartDistance = CollidableCameraCapsuleRadius * 2f;

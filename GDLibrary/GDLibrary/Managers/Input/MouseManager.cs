@@ -88,6 +88,11 @@ namespace GDLibrary
             return (deltaPositionLength > mouseSensitivity) ? true : false;
         }
 
+        public float DirectionMovedX()
+        {
+            return newState.X - oldState.X;
+        }
+
         public bool IsLeftButtonClickedOnce()
         {   
             return ((newState.LeftButton.Equals(ButtonState.Pressed)) && (!oldState.LeftButton.Equals(ButtonState.Pressed)));

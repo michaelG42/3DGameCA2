@@ -79,7 +79,6 @@ namespace GDApp
 
         private Timer timer;
         private UITextObject GameStateText;
-        private UITextObject GameStateTextShadow;
         private GameState gameState;
 
         #endregion
@@ -402,7 +401,7 @@ namespace GDApp
             InitializeCollidablePlayer(arenaScale);
 
             //collidable objects that we can turn on when we hit them
-            InitializeCollidableAISpheres(arenaScale);
+            //InitializeCollidableAISpheres(arenaScale);
 
             InitializeArena(arenaScale);
         }
@@ -714,21 +713,21 @@ namespace GDApp
             IController controller = new FlightCameraController("fcc", ControllerType.FirstPerson, AppData.CameraMoveKeys,
                 AppData.CameraMoveSpeed, AppData.CameraStrafeSpeed, AppData.CameraRotationSpeed, this.managerParameters);
 
-            InitializeCamera(screenResolution, AppData.FlightCameraID, this.viewPortDictionary["full viewport"], transform, null, 0, StatusType.Update);
+            //InitializeCamera(screenResolution, AppData.FlightCameraID, this.viewPortDictionary["full viewport"], transform, null, 0, StatusType.Update);
             #endregion
 
             #region Third Person Camera
             //if (this.playerCollidablePrimitiveObject != null) //if demo 4 then we have player to track
             //{
-            //    //position is irrelevant since its based on tracking a player object
-            //    transform = Transform3D.Zero;
+            //position is irrelevant since its based on tracking a player object
+            transform = Transform3D.Zero;
 
-            //    controller = new ThirdPersonController("tpc", ControllerType.ThirdPerson, this.playerCollidablePrimitiveObject,
-            //        AppData.CameraThirdPersonDistance, AppData.CameraThirdPersonScrollSpeedDistanceMultiplier,
-            //        AppData.CameraThirdPersonElevationAngleInDegrees, AppData.CameraThirdPersonScrollSpeedElevationMultiplier,
-            //        LerpSpeed.Medium, LerpSpeed.Fast, this.mouseManager);
+            controller = new ThirdPersonController("tpc", ControllerType.ThirdPerson, this.playerCollidablePrimitiveObject,
+                AppData.CameraThirdPersonDistance, AppData.CameraThirdPersonScrollSpeedDistanceMultiplier,
+                AppData.CameraThirdPersonElevationAngleInDegrees, AppData.CameraThirdPersonScrollSpeedElevationMultiplier,
+                LerpSpeed.Medium, LerpSpeed.Fast, this.mouseManager);
 
-            //    InitializeCamera(screenResolution, AppData.ThirdPersonCameraID, this.viewPortDictionary["full viewport"], transform, controller, 0);
+            InitializeCamera(screenResolution, AppData.ThirdPersonCameraID, this.viewPortDictionary["full viewport"], transform, controller, 0, StatusType.Update);
             //}
             #endregion
 
@@ -1072,6 +1071,7 @@ namespace GDApp
 
 
         }
+
         private void UpdateGameText(GameTime gameTime)
         {
             switch(this.gameState)
@@ -1089,10 +1089,10 @@ namespace GDApp
                     break;
                 case GameState.Finished:
                     break;
-
             }
 
         }
+
         private void CountDown(GameTime gameTime)
         {
 

@@ -131,7 +131,7 @@ namespace GDLibrary
             //dont test for collision against yourself - remember the player is in the object manager list too!
             if (this != actor3D)
             {
-                if (actor3D is CollidablePrimitiveObject && actor3D.ActorType != ActorType.CollidableGround)
+                if (actor3D is CollidablePrimitiveObject )//&& actor3D.ActorType != ActorType.CollidableGround)
                 {
                     CollidablePrimitiveObject collidableObject = actor3D as CollidablePrimitiveObject;
                     if (this.CollisionPrimitive.Intersects(collidableObject.CollisionPrimitive, this.Transform.TranslateIncrement))

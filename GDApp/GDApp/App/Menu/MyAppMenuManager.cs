@@ -116,7 +116,7 @@ namespace GDApp
             EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.MainMenu));
             if (firstStart)
             {
-                EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
+                //EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
 
                 object[] additionalParameters = { GameState.CountDown };
                 EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
