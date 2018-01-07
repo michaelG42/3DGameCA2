@@ -23,7 +23,7 @@ namespace GDLibrary
         private bool bThirdPersonZoneEventSent;
         private ManagerParameters managerParameters;
 
-        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector;//, collisionVector;
+        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
 
         private PlayerCollidablePrimitiveObject[] targets;
         private int targetIndex;
@@ -33,8 +33,7 @@ namespace GDLibrary
         private bool positionsInitialized;
         private bool initialPosSet;
         private bool inGame;
-
-        private GameState gameState;
+        private bool collidingWithGround;
 
         public PlayerCollidablePrimitiveObject[] Targets { get => targets; set => targets = value; }
         public bool InGame { get => inGame; set => inGame = value; }
@@ -53,7 +52,7 @@ namespace GDLibrary
             StatusType statusType, IVertexData vertexData, ICollisionPrimitive collisionPrimitive,
             ManagerParameters managerParameters,
             Keys[] moveKeys, float accelerationSpeed, EventDispatcher eventDispatcher)
-            : base(id, actorType, transform, effectParameters, statusType, vertexData, collisionPrimitive, managerParameters.ObjectManager)
+            : base(id, actorType, transform, effectParameters, statusType, vertexData, collisionPrimitive, managerParameters.ObjectManager, eventDispatcher)
         {
             this.moveKeys = moveKeys;
             this.accelerationSpeed = accelerationSpeed;
@@ -65,16 +64,17 @@ namespace GDLibrary
             this.CollisionVector = Vector3.Zero;
             this.gravity = 0;
             this.InGame = true;
+            this.collidingWithGround = true;
             this.previousPlayers = 3;
-            this.gameState = GameState.NotStarted;
-            RegisterForEventHandling(eventDispatcher);
+
+            //RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
 
         //used to make a player collidable primitives from an existing PrimitiveObject (i.e. the type returned by the PrimitiveFactory
         public PlayerCollidablePrimitiveObject(PrimitiveObject primitiveObject, ICollisionPrimitive collisionPrimitive,
                                 ManagerParameters managerParameters, Keys[] moveKeys, float accelerationSpeed, EventDispatcher eventDispatcher)
-            : base(primitiveObject, collisionPrimitive, managerParameters.ObjectManager)
+            : base(primitiveObject, collisionPrimitive, managerParameters.ObjectManager, eventDispatcher)
         {
             this.moveKeys = moveKeys;
             //this.accelerationSpeed = accelerationSpeed;
@@ -87,9 +87,10 @@ namespace GDLibrary
             this.CollisionVector = Vector3.Zero;
             this.gravity = 0;
             this.InGame = true;
+            this.collidingWithGround = true;
             this.previousPlayers = 3;
-            this.gameState = GameState.NotStarted;
-            RegisterForEventHandling(eventDispatcher);
+
+            //RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
 
@@ -106,7 +107,7 @@ namespace GDLibrary
             this.currentPosition = this.Transform.Translation;
             this.currentDirection = getCurrentDirection();
             //read any input and store suggested increments
-            if (InGame && (this.gameState == GameState.Level1 || this.gameState == GameState.Level2))
+            if (InGame && (this.GameState == GameState.Level1 || this.GameState == GameState.Level2))
             {
                 if (this.ActorType == ActorType.Player)
                 {
@@ -130,7 +131,7 @@ namespace GDLibrary
             HandleAcceleration(gameTime);
 
 
-
+            this.collidingWithGround = false;
             //have we collided with something?
             this.Collidee = CheckCollisions(gameTime);
 
@@ -155,15 +156,15 @@ namespace GDLibrary
             //Console.WriteLine("Current Pos is " + this.currentPosition);
         }
 
-        protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
-        {
-            eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
-        }
-        protected void EventDispatcher_GameStateChanged(EventData eventData)
-        {
+        //protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
+        //{
+        //    eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
+        //}
+        //protected void EventDispatcher_GameStateChanged(EventData eventData)
+        //{
 
-            this.gameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
-        }
+        //    this.gameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
+        //}
 
         protected void InitalizePositions()
         {
@@ -228,9 +229,26 @@ namespace GDLibrary
 
                     this.targetSet = false;
                 }
-                else if (collidee.ActorType == ActorType.CollidableGround)
+                else if (collidee.ActorType == ActorType.CollidableGround || collidee.ActorType == ActorType.CollidablePlatform)
                 {
-                    //this.Collidee = null;
+                    this.collidingWithGround = true;
+
+                    if (collidee.ActorType == ActorType.CollidablePlatform)
+                    {
+
+                        this.platformVector = (collidee as CollidablePrimitiveObject).Velocity;
+                    }
+                    else
+                    {
+                        this.platformVector = Vector3.Zero;
+                    }
+
+                    if (this.Transform.Translation.Y < (collidee as CollidablePrimitiveObject).Transform.Translation.Y)
+                    {
+                        this.accelerationVector.Y = 1;
+                    }
+
+                    this.Collidee = null;
                 }
             }
         }
@@ -240,39 +258,62 @@ namespace GDLibrary
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
             this.Velocity = CalculateVelocity() + this.accelerationVector;
-            this.Transform.TranslateIncrement = (this.Velocity);
+            if(this.GameState == GameState.Level2)
+            {
+                this.Velocity += this.platformVector;
+            }
+            if (this.GameState == GameState.Level1)
+                this.Transform.TranslateIncrement = (this.Velocity);
+            else
+                this.Transform.TranslateBy(this.Velocity);
         }
 
         protected float ApplyGravity()
         {
             //Gravity
             //Always applies a downward force unless colliding with Ground
-
-            if (GetDistanceToTarget(new Vector3(0, 0.5f, 0)) > 32f)
+            if(this.GameState == GameState.Level1)
             {
-                this.InGame = false;
-                if (this.currentPosition.Y > 2.5f)
+
+                if (GetDistanceToTarget(new Vector3(0, 0.5f, 0)) > 32f)
                 {
-                    this.gravity += -0.0025f;
-                }
-                else if (this.currentPosition.Y > 0.75f)
-                {
-                    this.gravity += 0.00075f;
-                }
-                else if (this.currentPosition.Y > -2f)
-                {
-                    if (this.gravity < -0.01f)
+                    this.InGame = false;
+                    if (this.currentPosition.Y > 2.5f)
                     {
-                        this.gravity += 0.0020f;
+                        this.gravity += -0.0025f;
                     }
-                    else
+                    else if (this.currentPosition.Y > 0.75f)
                     {
-                        this.gravity = -0.01f;
+                        this.gravity += 0.00075f;
                     }
+                    else if (this.currentPosition.Y > -2f)
+                    {
+                        if (this.gravity < -0.01f)
+                        {
+                            this.gravity += 0.0020f;
+                        }
+                        else
+                        {
+                            this.gravity = -0.01f;
+                        }
+                    }
+
                 }
 
             }
-            if (this.currentPosition.Y < -10)
+            else if (this.GameState == GameState.Level2)
+            {
+                if (!collidingWithGround)
+                {
+                    this.gravity += -0.0025f;
+                }
+                else
+                {
+                    this.gravity = 0;
+                }
+            }
+
+                if (this.currentPosition.Y < -10)
             {
                 this.ObjectManager.Remove(this);
             }
@@ -283,45 +324,112 @@ namespace GDLibrary
         protected override void HandleInput(GameTime gameTime)
         {
 
-            if (this.managerParameters.KeyboardManager.IsAnyKeyPressed())//CHANGE - To if MoveKeys Are Pressed
+                if (this.managerParameters.KeyboardManager.IsAnyKeyPressed())//CHANGE - To if MoveKeys Are Pressed
+                {
+                    //Contorls are different For level 2 as Camera is 3rd Person Not Fixed
+                    if (this.GameState == GameState.Level1)
+                    {
+                        Level1Input(gameTime);
+                    }
+                    else
+                    {
+                        Level2Input(gameTime);
+                    }
+
+                }
+                else
+                {
+                    //Else No input is pressed It will graduly decelerate the player 
+                    //Stop just Accelerates in the opposite direction of the velocity 
+                    //until the value is very minute then it is set to 0
+                    //this means the player will come to a stop when no input is pressed
+                    Stop(gameTime);
+                }
+
+
+        }
+            protected void Level1Input(GameTime gameTime)
+        {
+            //Set initial acceleration Values to 0
+            //So if nothing is pressed the acceleration vector will be 0
+            float accelerationX = 0;
+            float accelerationZ = 0;
+
+            // if input is pressed then set the appropriate value
+            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
             {
-                //Set initial acceleration Values to 0
-                //So if nothing is pressed the acceleration vector will be 0
-                float accelerationX = 0;
-                float accelerationZ = 0;
-
-                // if input is pressed then set the appropriate value
-                if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
-                {
-                    accelerationZ = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-                }
-                else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
-                {
-                    accelerationZ = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-                }
-
-                if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveLeft])) //Left
-                {
-                    accelerationX = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-                }
-                else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveRight])) //Right
-                {
-                    accelerationX = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-                }
-
-                //Fianlly set the acceleration Vector
-                //This will allow the player to travel in both X and Z direction at the same time
-                this.accelerationVector = new Vector3(accelerationX, 0, accelerationZ);
+                accelerationZ = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
             }
-            else
+            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
             {
-                //Else No input is pressed It will graduly decelerate the player
-                //Stop just Accelerates in the opposite direction of the velocity 
-                //until the value is very minute then it is set to 0
-                //this means the player will come to a stop when no input is pressed
-                Stop(gameTime);
+                accelerationZ = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
             }
 
+            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveLeft])) //Left
+            {
+                accelerationX = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveRight])) //Right
+            {
+                accelerationX = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+
+            //Fianlly set the acceleration Vector
+            //This will allow the player to travel in both X and Z direction at the same time
+            this.accelerationVector = new Vector3(accelerationX, 0, accelerationZ);
+        }
+
+        protected void Level2Input(GameTime gameTime)
+        {
+            Console.WriteLine("Level2 Input");
+            //Set initial acceleration Values to 0
+            //So if nothing is pressed the acceleration vector will be 0
+
+            Vector3 acceleration = Vector3.Zero;
+            // if input is pressed then set the appropriate value
+            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
+            {
+                acceleration
+                = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
+                            * this.accelerationSpeed;
+                //accelerationZ = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
+            {
+                acceleration
+                = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
+                            * -this.accelerationSpeed;
+                //accelerationZ = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
+            }
+
+            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveLeft])) //Left
+            {
+                acceleration
+                += this.Transform.Right * gameTime.ElapsedGameTime.Milliseconds
+                    * -this.accelerationSpeed;
+
+            }
+            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveRight])) //Right
+            {
+                acceleration
+                += this.Transform.Right * gameTime.ElapsedGameTime.Milliseconds
+                    * this.accelerationSpeed;
+            }
+
+            //Fianlly set the acceleration Vector
+            //This will allow the player to travel in both X and Z direction at the same time
+            this.accelerationVector = acceleration;
+
+            //Add extra controls to rotate 3rd person Camera
+            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateLeft]))
+            {
+                this.Transform.RotateIncrement = -gameTime.ElapsedGameTime.Milliseconds * AppData.PlayerRotationSpeed;
+
+            }
+            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateRight]))
+            {
+                this.Transform.RotateIncrement = gameTime.ElapsedGameTime.Milliseconds * AppData.PlayerRotationSpeed;
+            }
         }
 
         protected Vector3 CalculateVelocity()
@@ -334,6 +442,10 @@ namespace GDLibrary
             if (this.CollisionVector == Vector3.Zero)
             {
                 TempVelocity = (this.currentPosition - this.previousPosition);
+                if(this.GameState == GameState.Level2)
+                {
+                    TempVelocity -= -this.platformVector;
+                }
             }
             else
             {

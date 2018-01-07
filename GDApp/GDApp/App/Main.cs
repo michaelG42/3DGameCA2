@@ -80,6 +80,7 @@ namespace GDApp
 
         private PlatformCollidablePrimitiveObject[] platforms;
         private Timer timer;
+        private int InitialTimerTime;
         private UITextObject GameStateText;
         private GameState gameState;
 
@@ -503,7 +504,7 @@ namespace GDApp
             BoxCollisionPrimitive collisionPrimitive = new BoxCollisionPrimitive(transform);
 
             this.platforms[index] = new PlatformCollidablePrimitiveObject(primativeObject, collisionPrimitive,
-                this.managerParameters);
+                this.managerParameters, this.eventDispatcher);
 
             this.platforms[index].ActorType = ActorType.CollidablePlatform;
 
@@ -572,7 +573,7 @@ namespace GDApp
 
                 //make the collidable primitive
                 collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-                    new BoxCollisionPrimitive(transform), this.objectManager);
+                    new BoxCollisionPrimitive(transform), this.objectManager, this.eventDispatcher);
 
                 //do we want an actor type for CDCR?
                 collidablePrimitiveObject.ActorType = ActorType.CollidableDecorator;
@@ -600,7 +601,7 @@ namespace GDApp
             transform = new Transform3D(new Vector3(0, 0.5f, 0), Vector3.Zero, new Vector3(arenaScale, 1, arenaScale), Vector3.UnitX, Vector3.UnitY);
 
             collidablePrimitiveObject = new CollidablePrimitiveObject(archetypeObject.Clone() as PrimitiveObject,
-            new SphereCollisionPrimitive(transform, arenaScale), this.objectManager);
+            new SphereCollisionPrimitive(transform, arenaScale), this.objectManager, this.eventDispatcher);
 
             collidablePrimitiveObject.ActorType = ActorType.CollidableGround;
 
@@ -1251,7 +1252,7 @@ namespace GDApp
             UpdateGameText(gameTime);
             if(this.gameState == GameState.Level1)
             {
-                checkLevel1Win();
+                checkLevel1Win(gameTime);
             }
         }
         private void UpdateGameText(GameTime gameTime)
@@ -1263,14 +1264,13 @@ namespace GDApp
                     break;
                 case GameState.CountDown:
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 100) / 2, 60);
-                    CountDown(gameTime);
+                    CountDownLevel1(gameTime);
                     break;
                 case GameState.Level1:
                     this.GameStateText.Text = "";
                     break;
                 case GameState.Level2Intro:
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15*64)) / 2, 60);
-                    this.GameStateText.Text = "ESCAPE THE VOLCANO!";
+                    CountDownLevel2(gameTime);
                     break;
                 case GameState.Level2:
                     this.GameStateText.Text = "";
@@ -1283,7 +1283,7 @@ namespace GDApp
 
         }
 
-        private void CountDown(GameTime gameTime)
+        private void CountDownLevel1(GameTime gameTime)
         {
 
             
@@ -1299,6 +1299,7 @@ namespace GDApp
                 else if (this.timer.EndTime > 0)
                 {
                     this.timer.finish();
+                    this.timer.reset();
                     object[] additionalParameters = { GameState.Level1 };
                     EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
                 }
@@ -1308,8 +1309,43 @@ namespace GDApp
                 }
             }
 
+        }
+
+        private void CountDownLevel2(GameTime gameTime)
+        {
+
             
-          
+            if (!this.timer.IsComplete)
+            {
+                this.timer.set(gameTime, InitialTimerTime + 15);
+
+                if (this.timer.EndTime == 0)
+                {
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 160) / 2, 60);
+                    this.GameStateText.Text = "GO!";
+                }
+                else if (this.timer.EndTime > 0)
+                {
+                    this.timer.finish();
+                    object[] additionalParameters = { GameState.Level2 };
+                    EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+                }
+                else if (this.timer.EndTime >= -5)
+                {
+                    this.GameStateText.Text = this.timer.Display;
+                }
+                else if (this.timer.EndTime >= -10)
+                {
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15 * 64)) / 2, 60);
+                    this.GameStateText.Text = "ESCAPE THE VOLCANO!";
+                }
+                else if (this.timer.EndTime >= -15)
+                {
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15 * 64)) / 2, 60);
+                    this.GameStateText.Text = "Level 2";
+                }
+            }
+
         }
         #endregion
 
@@ -1344,7 +1380,7 @@ namespace GDApp
         }
         #endregion
 
-        private void checkLevel1Win()
+        private void checkLevel1Win(GameTime gameTime)
         {
             int count = 0;
             for (int i = 0; i < enemys.Length; i++)
@@ -1356,7 +1392,10 @@ namespace GDApp
             }
             if(count == 3)
             {
-                object[] additionalParameters = { GameState.Finished };
+                this.timer.reset();
+                this.InitialTimerTime = gameTime.TotalGameTime.Seconds;
+                
+                object[] additionalParameters = { GameState.Level2Intro };
                 EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
             }
         }

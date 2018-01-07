@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GDLibrary.Enums;
+using Microsoft.Xna.Framework;
+using System;
 
 namespace GDLibrary
 {
@@ -8,11 +10,13 @@ namespace GDLibrary
         //the skin used to wrap the object
         private ICollisionPrimitive collisionPrimitive;
 
+        private GameState gameState;
         //the object that im colliding with
         private Actor collidee;
         private ObjectManager objectManager;
         private Vector3 velocity, collisionVector;
 
+        private EventDispatcher eventDispatcher;
         #endregion
 
         #region Properties
@@ -49,23 +53,27 @@ namespace GDLibrary
 
         public Vector3 Velocity { get => velocity; set => velocity = value; }
         public Vector3 CollisionVector { get => collisionVector; set => collisionVector = value; }
+        public GameState GameState { get => gameState; set => gameState = value; }
 
         #endregion
 
         //used to draw collidable primitives that have a texture i.e. use VertexPositionColor vertex types only
         public CollidablePrimitiveObject(string id, ActorType actorType, Transform3D transform,
             EffectParameters effectParameters, StatusType statusType, IVertexData vertexData,
-             ICollisionPrimitive collisionPrimitive, ObjectManager objectManager)
+             ICollisionPrimitive collisionPrimitive, ObjectManager objectManager, EventDispatcher eventDispatcher)
             : base(id, actorType, transform, effectParameters, statusType, vertexData)
         {
             this.collisionPrimitive = collisionPrimitive;
             //unusual to pass this in but we use it to test for collisions - see Update();
             this.objectManager = objectManager;
             this.velocity = new Vector3(0, 0, 0);
+            this.GameState = GameState.NotStarted;
+            this.eventDispatcher = eventDispatcher;
+            RegisterForEventHandling(eventDispatcher);
         }
 
         //used to make a collidable primitives from an existing PrimitiveObject (i.e. the type returned by the PrimitiveFactory
-        public CollidablePrimitiveObject(PrimitiveObject primitiveObject, ICollisionPrimitive collisionPrimitive, ObjectManager objectManager)
+        public CollidablePrimitiveObject(PrimitiveObject primitiveObject, ICollisionPrimitive collisionPrimitive, ObjectManager objectManager, EventDispatcher eventDispatcher)
             : base(primitiveObject.ID, primitiveObject.ActorType, primitiveObject.Transform, primitiveObject.EffectParameters,
                   primitiveObject.StatusType, primitiveObject.VertexData)
         {
@@ -73,6 +81,19 @@ namespace GDLibrary
             //unusual to pass this in but we use it to test for collisions - see Update();
             this.objectManager = objectManager;
             this.velocity = new Vector3(0, 0, 0);
+            this.GameState = GameState.NotStarted;
+            this.eventDispatcher = eventDispatcher;
+            RegisterForEventHandling(eventDispatcher);
+        }
+
+        protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
+        {
+            eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
+        }
+        protected void EventDispatcher_GameStateChanged(EventData eventData)
+        {
+
+            this.GameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
         }
 
 
@@ -128,21 +149,41 @@ namespace GDLibrary
         //test for collision against a specific object
         private Actor CheckCollisionWithActor(GameTime gameTime, Actor3D actor3D)
         {
+
             //dont test for collision against yourself - remember the player is in the object manager list too!
             if (this != actor3D)
             {
-                if (actor3D is CollidablePrimitiveObject && actor3D.ActorType != ActorType.CollidableGround)
+                if(this.GameState == GameState.Level1)
                 {
-                    CollidablePrimitiveObject collidableObject = actor3D as CollidablePrimitiveObject;
-                    if (this.CollisionPrimitive.Intersects(collidableObject.CollisionPrimitive, this.Transform.TranslateIncrement))
-                        return collidableObject;
+                    if (actor3D is CollidablePrimitiveObject && actor3D.ActorType != ActorType.CollidableGround)
+                    {
+                        CollidablePrimitiveObject collidableObject = actor3D as CollidablePrimitiveObject;
+                        if (this.CollisionPrimitive.Intersects(collidableObject.CollisionPrimitive, this.Transform.TranslateIncrement))
+                            return collidableObject;
+                    }
+                    else if (actor3D is SimpleZoneObject)
+                    {
+                        SimpleZoneObject zoneObject = actor3D as SimpleZoneObject;
+                        if (this.CollisionPrimitive.Intersects(zoneObject.CollisionPrimitive, this.Transform.TranslateIncrement))
+                            return zoneObject;
+                    }
                 }
-                else if (actor3D is SimpleZoneObject)
+                else
                 {
-                    SimpleZoneObject zoneObject = actor3D as SimpleZoneObject;
-                    if (this.CollisionPrimitive.Intersects(zoneObject.CollisionPrimitive, this.Transform.TranslateIncrement))
-                        return zoneObject;
+                    if (actor3D is CollidablePrimitiveObject)
+                    {
+                        CollidablePrimitiveObject collidableObject = actor3D as CollidablePrimitiveObject;
+                        if (this.CollisionPrimitive.Intersects(collidableObject.CollisionPrimitive, this.Transform.TranslateIncrement))
+                            return collidableObject;
+                    }
+                    else if (actor3D is SimpleZoneObject)
+                    {
+                        SimpleZoneObject zoneObject = actor3D as SimpleZoneObject;
+                        if (this.CollisionPrimitive.Intersects(zoneObject.CollisionPrimitive, this.Transform.TranslateIncrement))
+                            return zoneObject;
+                    }
                 }
+
             }
 
             return null;
@@ -168,7 +209,8 @@ namespace GDLibrary
                       this.StatusType, //deep
                       this.VertexData, //shallow - its ok if objects refer to the same vertices
                       (ICollisionPrimitive)this.CollisionPrimitive.Clone(), //deep
-                      this.objectManager); //shallow - reference
+                      this.objectManager,
+                      this.eventDispatcher); //shallow - reference
 
 
             if (this.ControllerList != null)

@@ -14,15 +14,15 @@ namespace GDApp.App.Actors
 
         public PlatformCollidablePrimitiveObject(string id, ActorType actorType, Transform3D transform, EffectParameters effectParameters,
             StatusType statusType, IVertexData vertexData, ICollisionPrimitive collisionPrimitive,
-            ManagerParameters managerParameters)
-            : base(id, actorType, transform, effectParameters, statusType, vertexData, collisionPrimitive, managerParameters.ObjectManager)
+            ManagerParameters managerParameters, EventDispatcher eventDispatcher)
+            : base(id, actorType, transform, effectParameters, statusType, vertexData, collisionPrimitive, managerParameters.ObjectManager, eventDispatcher)
         {
             this.currentPosition = this.previousPosition = this.Transform.Translation;
         }
 
         public PlatformCollidablePrimitiveObject(PrimitiveObject primitiveObject, ICollisionPrimitive collisionPrimitive,
-                        ManagerParameters managerParameters)
-            : base(primitiveObject, collisionPrimitive, managerParameters.ObjectManager)
+                        ManagerParameters managerParameters, EventDispatcher eventDispatcher)
+            : base(primitiveObject, collisionPrimitive, managerParameters.ObjectManager, eventDispatcher)
         {
 
         }

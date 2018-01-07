@@ -4,6 +4,7 @@
     {
         #region Variables
         private PickupParameters pickupParameters;
+        private EventDispatcher eventDispatcher;
         #endregion
 
         #region Properties
@@ -23,17 +24,19 @@
         //used to draw collidable primitives that a value associated with them e.g. health
         public PickupCollidablePrimitiveObject(string id, ActorType actorType, Transform3D transform,
             EffectParameters effectParameters, StatusType statusType, IVertexData vertexData,
-             ICollisionPrimitive collisionPrimitive, ObjectManager objectManager, PickupParameters pickupParameters)
-            : base(id, actorType, transform, effectParameters, statusType, vertexData, collisionPrimitive, objectManager)
+             ICollisionPrimitive collisionPrimitive, ObjectManager objectManager, PickupParameters pickupParameters,EventDispatcher eventDispatcher)
+            : base(id, actorType, transform, effectParameters, statusType, vertexData, collisionPrimitive, objectManager, eventDispatcher)
         {
+            this.eventDispatcher = eventDispatcher;
             this.pickupParameters = pickupParameters;
         }
 
         //used to make a pick collidable primitives from an existing PrimitiveObject (i.e. the type returned by the PrimitiveFactory
         public PickupCollidablePrimitiveObject(PrimitiveObject primitiveObject, ICollisionPrimitive collisionPrimitive, 
-                                ObjectManager objectManager, PickupParameters pickupParameters)
-            : base(primitiveObject, collisionPrimitive, objectManager)
+                                ObjectManager objectManager, PickupParameters pickupParameters, EventDispatcher eventDispatcher)
+            : base(primitiveObject, collisionPrimitive, objectManager, eventDispatcher)
         {
+            this.eventDispatcher = eventDispatcher;
             this.pickupParameters = pickupParameters;
         }
 
@@ -49,7 +52,8 @@
                  this.VertexData, //shallow - its ok if objects refer to the same vertices
                  (ICollisionPrimitive)this.CollisionPrimitive.Clone(), //deep
                  this.ObjectManager, //shallow - reference
-                 (PickupParameters)this.pickupParameters.Clone()); //deep 
+                 (PickupParameters)this.pickupParameters.Clone(),
+                 this.eventDispatcher); //deep 
 
             if (this.ControllerList != null)
             {
