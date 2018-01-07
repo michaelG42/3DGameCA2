@@ -153,7 +153,8 @@ namespace GDLibrary
         #endregion
 
         #region Zone IDs
-        public static readonly string SwitchToThirdPersonZoneID = "third person camera zone";
+        public static readonly string WinZoneID = "win zone";
+        public static readonly string LooseZoneID = "loose zone";
         #endregion
 
     }

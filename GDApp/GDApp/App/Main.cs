@@ -249,15 +249,15 @@ namespace GDApp
             //this.textureDictionary.Load("Assets/Textures/Props/Crates/crate2");
             this.textureDictionary.Load("Assets/GDDebug/Textures/checkerboard");
             //this.textureDictionary.Load("Assets/Textures/Foliage/Ground/grass1");
-            //this.textureDictionary.Load("Assets/Textures/Skybox/back");
-            //this.textureDictionary.Load("Assets/Textures/Skybox/left");
-            //this.textureDictionary.Load("Assets/Textures/Skybox/right");
-            //this.textureDictionary.Load("Assets/Textures/Skybox/sky");
-            //this.textureDictionary.Load("Assets/Textures/Skybox/front");
+            this.textureDictionary.Load("Assets/Textures/Skybox/back");
+            this.textureDictionary.Load("Assets/Textures/Skybox/left");
+            this.textureDictionary.Load("Assets/Textures/Skybox/right");
+            this.textureDictionary.Load("Assets/Textures/Skybox/sky");
+            this.textureDictionary.Load("Assets/Textures/Skybox/front");
             //this.textureDictionary.Load("Assets/Textures/Foliage/Trees/tree2");
             this.textureDictionary.Load("Assets/Textures/Enviornment/Lava");
             this.textureDictionary.Load("Assets/Textures/Enviornment/VolcanoWall");
-            this.textureDictionary.Load("Assets/Textures/Enviornment/Space");
+            //this.textureDictionary.Load("Assets/Textures/Enviornment/Space");
 
 
             //this.textureDictionary.Load("Assets/Textures/Semitransparent/transparentstripes");
@@ -394,7 +394,7 @@ namespace GDApp
         private void LoadGame()
         {
             //non-collidable ground
-            int worldScale = 250;
+            int worldScale = 300;
             int arenaScale = 30;
             InitializeNonCollidableGround(worldScale);
             InitializeNonCollidableSkyBox(worldScale);
@@ -403,16 +403,17 @@ namespace GDApp
             InitializeCollidablePlayer(arenaScale);
 
             //collidable objects that we can turn on when we hit them
-            //InitializeCollidableAISpheres(arenaScale);
+            InitializeCollidableAISpheres(arenaScale);
 
             InitializeArena(arenaScale);
 
-            InitializePlatforms();
+            //InitializePlatforms();
+            //InitializeCollidableZones();
         }
 
         private void InitializePlatforms()
         {
-            this.platforms = new PlatformCollidablePrimitiveObject[10];
+            this.platforms = new PlatformCollidablePrimitiveObject[13];
 
 
             InitializePlatform(0, new Transform3D(new Vector3(0, 0.5f, -70), Vector3.Zero, new Vector3(10, 2, 80), Vector3.UnitX, Vector3.UnitY)
@@ -444,10 +445,52 @@ namespace GDApp
             , ShapeType.NormalCube);
 
             InitializePlatform(7, new Transform3D(new Vector3(30, 40, -40), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
-            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(80, 0.02f, 180 * (5)))
+            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(40, 0.02f, 180 * (5)))
+            , ShapeType.NormalCube);
+
+            InitializePlatform(8, new Transform3D(new Vector3(30, 80, 10), Vector3.Zero, new Vector3(20, 2, 80), Vector3.UnitX, Vector3.UnitY)
+            , null
+            , ShapeType.NormalCube);
+
+            InitializePlatform(9, new Transform3D(new Vector3(-30, 80, 60), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
+            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(1, 0, 0), new TrigonometricParameters(60, 0.02f, 180 * (5)))
+            , ShapeType.NormalCube);
+
+            InitializePlatform(10, new Transform3D(new Vector3(-50, 80, 30), Vector3.Zero, new Vector3(20, 2, 80), Vector3.UnitX, Vector3.UnitY)
+            , null
+            , ShapeType.NormalCube);
+
+            InitializePlatform(11, new Transform3D(new Vector3(-50, 80, -20), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
+            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(60, 0.02f, 180 * (5)))
+            , ShapeType.NormalCube);
+
+            InitializePlatform(10, new Transform3D(new Vector3(0, 140, 10), Vector3.Zero, new Vector3(80, 2, 80), Vector3.UnitX, Vector3.UnitY)
+            , null
             , ShapeType.NormalCube);
         }
 
+        private void InitializeCollidableZones()
+        {
+            #region Win Zone
+            Transform3D winTransform = null;
+            SimpleZoneObject winZoneObject = null;
+            ICollisionPrimitive winCollisionPrimitive = null;
+
+            //place the zone and scale it based on how big you want the zone to be
+            winTransform = new Transform3D(new Vector3(0, 150, 10), new Vector3(80, 20, 80));
+
+            //we can have a sphere or a box - its entirely up to the developer
+            winCollisionPrimitive = new BoxCollisionPrimitive(winTransform);
+            //collisionPrimitive = new BoxCollisionPrimitive(transform);
+
+            winZoneObject = new SimpleZoneObject(AppData.WinZoneID, ActorType.Zone, winTransform,
+                StatusType.Drawn | StatusType.Update, winCollisionPrimitive);//, mParams);
+
+            this.objectManager.Add(winZoneObject); 
+            #endregion
+
+
+        }
         private void InitializePlatform(int index, Transform3D transform, IController controller, ShapeType shapeType)
         {
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
@@ -605,8 +648,8 @@ namespace GDApp
             PrimitiveObject primitiveObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.ColoredSphere, effectParameters);
 
             //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
-            //Transform3D transform = new Transform3D(new Vector3(0, Scale / 2 + 2, position), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
-            Transform3D transform = new Transform3D(new Vector3(0, 45, 61), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
+            Transform3D transform = new Transform3D(new Vector3(0, Scale / 2 + 2, position), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
+            //Transform3D transform = new Transform3D(new Vector3(0, 45, 61), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
 
             //instanciate a box primitive at player position
             SphereCollisionPrimitive collisionPrimitive = new SphereCollisionPrimitive(transform, Scale / 2);
@@ -660,7 +703,7 @@ namespace GDApp
         }
 
 
-        private void InitializeNonCollidableSkyBox(int worldScale)
+        private void InitializeNonCollidableVolcanoBox(int worldScale)
         {
            // worldScale /= 2;
             //first we will create a prototype plane and then simply clone it for each of the skybox decorator elements (e.g. ground, front, top etc). 
@@ -668,6 +711,7 @@ namespace GDApp
 
             //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
+
 
             //get the archetype from the factory
             PrimitiveObject Skybox = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
@@ -707,13 +751,13 @@ namespace GDApp
             clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
             this.objectManager.Add(clonePlane);
 
-            //add the top skybox plane
-            clonePlane = Skybox.Clone() as PrimitiveObject;
+            ////add the top skybox plane
+            //clonePlane = Skybox.Clone() as PrimitiveObject;
 
-            clonePlane.Transform.Rotation = new Vector3(180, -90, 0);
-            clonePlane.Transform.Translation = new Vector3(0, ((worldScale) / 2.0f) - 5, 0);
-            clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
-            this.objectManager.Add(clonePlane);
+            //clonePlane.Transform.Rotation = new Vector3(180, -90, 0);
+            //clonePlane.Transform.Translation = new Vector3(0, ((worldScale) / 2.0f) - 5, 0);
+            //clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
+            //this.objectManager.Add(clonePlane);
 
             //add the front skybox plane
             clonePlane = Skybox.Clone() as PrimitiveObject;
@@ -725,6 +769,77 @@ namespace GDApp
             #endregion
         }
 
+        private void InitializeNonCollidableSkyBox(int worldScale)
+        {
+            InitializeNonCollidableVolcanoBox(worldScale);
+        
+                worldScale *= 2;
+            //first we will create a prototype plane and then simply clone it for each of the skybox decorator elements (e.g. ground, front, top etc). 
+            Transform3D transform = new Transform3D(new Vector3(0, -5, 0), new Vector3(worldScale, 1, worldScale));
+
+            //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
+            BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
+           
+
+            //get the archetype from the factory
+            PrimitiveObject Skybox = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
+            PrimitiveObject clonePlane = null;
+            //set texture once so all clones have the same
+            Skybox.EffectParameters.Texture = this.textureDictionary["back"];
+            //Skybox.EffectParameters.DiffuseColor = Color.White;
+            #region Skybox
+
+           //
+           clonePlane = Skybox.Clone() as PrimitiveObject;
+
+            clonePlane.Transform.Rotation = new Vector3(90, 0, 0);
+
+            clonePlane.Transform.Translation = new Vector3(0, 50, (-1.0f * worldScale) / 2.0f);
+
+            clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
+            this.objectManager.Add(clonePlane);
+
+            //As an exercise the student should add the remaining 4 skybox planes here by repeating the clone, texture assignment, rotation, and translation steps above...
+            //add the left skybox plane
+            Skybox.EffectParameters.Texture = this.textureDictionary["left"];
+            clonePlane = Skybox.Clone() as PrimitiveObject;
+
+            clonePlane.Transform.Rotation = new Vector3(90, 90, 0);
+            clonePlane.Transform.Translation = new Vector3((-1.0f * worldScale) / 2.0f, 50, 0);
+
+            clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
+
+            this.objectManager.Add(clonePlane);
+
+            //add the right skybox plane
+            Skybox.EffectParameters.Texture = this.textureDictionary["right"];
+            clonePlane = Skybox.Clone() as PrimitiveObject;
+
+            clonePlane.Transform.Rotation = new Vector3(90, -90, 0);
+            clonePlane.Transform.Translation = new Vector3((worldScale) / 2.0f, 50, 0);
+
+            clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
+            this.objectManager.Add(clonePlane);
+
+            //add the top skybox plane
+            Skybox.EffectParameters.Texture = this.textureDictionary["sky"];
+            clonePlane = Skybox.Clone() as PrimitiveObject;
+
+            clonePlane.Transform.Rotation = new Vector3(180, -90, 0);
+            clonePlane.Transform.Translation = new Vector3(0, ((worldScale) / 2.0f) - 50, 0);
+            clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
+            this.objectManager.Add(clonePlane);
+
+            //add the front skybox plane
+            Skybox.EffectParameters.Texture = this.textureDictionary["front"];
+            clonePlane = Skybox.Clone() as PrimitiveObject;
+
+            clonePlane.Transform.Rotation = new Vector3(-90, 0, 180);
+            clonePlane.Transform.Translation = new Vector3(0, 50, (worldScale) / 2.0f);
+            clonePlane.Transform.ScaleBy(new Vector3(worldScale, 1, worldScale));
+            this.objectManager.Add(clonePlane);
+            #endregion
+        }
         #endregion
 
 
@@ -1092,7 +1207,7 @@ namespace GDApp
 
         private void InitializeGameStateText()
         {
-            string initalText = "GET READY";
+            string initalText = "GET READY!";
             Transform2D transform = null;
 
             this.GameStateText = null;
@@ -1106,7 +1221,7 @@ namespace GDApp
             #region Player 1 Progress Bar
 
             //to center align horizontaly, it is half window width - lenght of text multiplyed by Scale and fontSize divided by 2
-            position = new Vector2((GraphicsDevice.Viewport.Width - (initalText.Length * 64)) /2, verticalOffset);
+            position = new Vector2((GraphicsDevice.Viewport.Width - (initalText.Length * 60)) /2, verticalOffset);
 
             transform = new Transform2D(position, 0, scale,
                 Vector2.Zero, /*new Vector2(texture.Width/2.0f, texture.Height/2.0f),*/
@@ -1131,23 +1246,38 @@ namespace GDApp
 
 
         }
-
+        private void CheckGameState(GameTime gameTime)
+        {
+            UpdateGameText(gameTime);
+            if(this.gameState == GameState.Level1)
+            {
+                checkLevel1Win();
+            }
+        }
         private void UpdateGameText(GameTime gameTime)
         {
             switch(this.gameState)
             {
                 case GameState.NotStarted:
-                    this.GameStateText.Text = "GET READY";
+                    this.GameStateText.Text = "GET READY!";
                     break;
                 case GameState.CountDown:
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 100) / 2, 60);
                     CountDown(gameTime);
                     break;
                 case GameState.Level1:
                     this.GameStateText.Text = "";
                     break;
+                case GameState.Level2Intro:
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15*64)) / 2, 60);
+                    this.GameStateText.Text = "ESCAPE THE VOLCANO!";
+                    break;
                 case GameState.Level2:
+                    this.GameStateText.Text = "";
                     break;
                 case GameState.Finished:
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (7 * 62)) / 2, 60);
+                    this.GameStateText.Text = "YOU WIN!";
                     break;
             }
 
@@ -1159,16 +1289,17 @@ namespace GDApp
             
             if(!this.timer.IsComplete)
             {
-                this.timer.set(gameTime, 24);
+                this.timer.set(gameTime, 4);
 
                 if (this.timer.EndTime == 0)
                 {
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 160) / 2, 60);
                     this.GameStateText.Text = "GO!";
                 }
                 else if (this.timer.EndTime > 0)
                 {
                     this.timer.finish();
-                    object[] additionalParameters = { GameState.Level2 };
+                    object[] additionalParameters = { GameState.Level1 };
                     EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
                 }
                 else if(this.timer.EndTime >= -5)
@@ -1212,6 +1343,23 @@ namespace GDApp
 
         }
         #endregion
+
+        private void checkLevel1Win()
+        {
+            int count = 0;
+            for (int i = 0; i < enemys.Length; i++)
+            {
+                if(!enemys[i].InGame)
+                {
+                    count++;
+                }
+            }
+            if(count == 3)
+            {
+                object[] additionalParameters = { GameState.Finished };
+                EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+            }
+        }
 
         protected void updateTargets()
         {
@@ -1283,7 +1431,8 @@ namespace GDApp
             if(this.gamePadManager != null && this.gamePadManager.IsPlayerConnected(PlayerIndex.One) && this.gamePadManager.IsButtonPressed(PlayerIndex.One, Buttons.Back))
                 this.Exit();
 
-            UpdateGameText(gameTime);
+            CheckGameState(gameTime);
+            
 
 
 #if DEMO

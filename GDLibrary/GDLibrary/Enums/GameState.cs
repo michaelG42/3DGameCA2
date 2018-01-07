@@ -10,6 +10,7 @@ namespace GDLibrary.Enums
         NotStarted,
         CountDown,
         Level1,
+        Level2Intro,
         Level2,
         Finished
     }

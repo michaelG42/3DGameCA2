@@ -23,7 +23,7 @@ namespace GDLibrary
         private bool bThirdPersonZoneEventSent;
         private ManagerParameters managerParameters;
 
-        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
+        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector;//, collisionVector;
 
         private PlayerCollidablePrimitiveObject[] targets;
         private int targetIndex;
@@ -33,12 +33,11 @@ namespace GDLibrary
         private bool positionsInitialized;
         private bool initialPosSet;
         private bool inGame;
-        private bool collidingWithGround;
-        private bool collidingWithPlatform;
 
         private GameState gameState;
 
         public PlayerCollidablePrimitiveObject[] Targets { get => targets; set => targets = value; }
+        public bool InGame { get => inGame; set => inGame = value; }
 
 
         //private Vector3 acceleration;
@@ -65,12 +64,9 @@ namespace GDLibrary
             this.currentDirection = 0;
             this.CollisionVector = Vector3.Zero;
             this.gravity = 0;
-            this.inGame = true;
-            this.collidingWithGround = true;
-            this.collidingWithPlatform = false;
+            this.InGame = true;
             this.previousPlayers = 3;
             this.gameState = GameState.NotStarted;
-
             RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
@@ -87,12 +83,10 @@ namespace GDLibrary
             this.managerParameters = managerParameters;
             this.positionsInitialized = false;
             this.initialPosSet = false;
-            this.collidingWithGround = true;
-            this.collidingWithPlatform = false;
             this.currentDirection = 0;
             this.CollisionVector = Vector3.Zero;
             this.gravity = 0;
-            this.inGame = true;
+            this.InGame = true;
             this.previousPlayers = 3;
             this.gameState = GameState.NotStarted;
             RegisterForEventHandling(eventDispatcher);
@@ -101,7 +95,6 @@ namespace GDLibrary
 
         public override void Update(GameTime gameTime)
         {
-
             this.elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
             this.timer -= elapsed;
             if (!positionsInitialized)
@@ -113,8 +106,8 @@ namespace GDLibrary
             this.currentPosition = this.Transform.Translation;
             this.currentDirection = getCurrentDirection();
             //read any input and store suggested increments
-            //if(inGame && (this.gameState == GameState.Level1 || this.gameState == GameState.Level2))
-            //{
+            if (InGame && (this.gameState == GameState.Level1 || this.gameState == GameState.Level2))
+            {
                 if (this.ActorType == ActorType.Player)
                 {
                     //If It is A Human Player get Input from Keyboard
@@ -125,11 +118,11 @@ namespace GDLibrary
                     //Else its AI Call Move to Calculate Velocity etc
                     Move(gameTime);
                 }
-            //}
-            //else
-            //{
-            //    Stop(gameTime);
-            //}
+            }
+            else
+            {
+                Stop(gameTime);
+            }
 
 
             //Adds Acceleration to the current velocity
@@ -139,8 +132,6 @@ namespace GDLibrary
 
 
             //have we collided with something?
-            this.collidingWithGround = false;
-            this.collidingWithPlatform = false;
             this.Collidee = CheckCollisions(gameTime);
 
             //how do we respond to this collidee e.g. pickup?
@@ -187,7 +178,7 @@ namespace GDLibrary
         {
             if (collidee is SimpleZoneObject)
             {
-                if (collidee.ID.Equals(AppData.SwitchToThirdPersonZoneID))
+                if (collidee.ID.Equals(AppData.WinZoneID))
                 {
                     if (!bThirdPersonZoneEventSent) //add a boolean to stop the event being sent multiple times!
                     {
@@ -237,28 +228,10 @@ namespace GDLibrary
 
                     this.targetSet = false;
                 }
-                else if (collidee.ActorType == ActorType.CollidableGround || collidee.ActorType == ActorType.CollidablePlatform)
+                else if (collidee.ActorType == ActorType.CollidableGround)
                 {
-                    this.collidingWithGround = true;
-
-                    if (collidee.ActorType == ActorType.CollidablePlatform)
-                    {
-                        this.collidingWithPlatform = true;
-                        this.platformVector = (collidee as CollidablePrimitiveObject).Velocity;
-                    }
-                    else
-                    {
-                        this.platformVector = Vector3.Zero;
-                    }
-
-                    if(this.Transform.Translation.Y < (collidee as CollidablePrimitiveObject).Transform.Translation.Y)
-                    {
-                        this.accelerationVector.Y = 1;
-                    }
-
-                    this.Collidee = null;
+                    //this.Collidee = null;
                 }
-
             }
         }
 
@@ -266,13 +239,8 @@ namespace GDLibrary
         {
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
-            
-
-                this.Velocity = (CalculateVelocity() + (this.platformVector)) + this.accelerationVector ;
-            
-                this.Transform.TranslateBy(this.Velocity);
-
-
+            this.Velocity = CalculateVelocity() + this.accelerationVector;
+            this.Transform.TranslateIncrement = (this.Velocity);
         }
 
         protected float ApplyGravity()
@@ -280,51 +248,30 @@ namespace GDLibrary
             //Gravity
             //Always applies a downward force unless colliding with Ground
 
-            //if (this.gameState == GameState.Level1)
-            //{
-            //    if (GetDistanceToTarget(new Vector3(0, 0.5f, 0)) > 32f)
-            //    {
-            //        this.inGame = false;
-            //        if (this.currentPosition.Y > 2.5f)
-            //        {
-            //            this.gravity += -0.0025f;
-            //        }
-            //        else if (this.currentPosition.Y > 0.75f)
-            //        {
-            //            this.gravity += 0.00075f;
-            //        }
-            //        else if (this.currentPosition.Y > -2f)
-            //        {
-            //            if (this.gravity < -0.01f)
-            //            {
-            //                this.gravity += 0.0020f;
-            //            }
-            //            else
-            //            {
-            //                this.gravity = -0.01f;
-            //            }
-            //        }
-
-            //    }
-            //}
-            //else
-            //{
-            //    if(Collidee == null)
-            //    {
-            //        this.gravity += -0.0025f;
-            //    }
-            //}
-
-            if (!collidingWithGround)
+            if (GetDistanceToTarget(new Vector3(0, 0.5f, 0)) > 32f)
             {
-                this.gravity += -0.0025f;
-            }
-            else
-            {
-                this.gravity = 0;
-            }
+                this.InGame = false;
+                if (this.currentPosition.Y > 2.5f)
+                {
+                    this.gravity += -0.0025f;
+                }
+                else if (this.currentPosition.Y > 0.75f)
+                {
+                    this.gravity += 0.00075f;
+                }
+                else if (this.currentPosition.Y > -2f)
+                {
+                    if (this.gravity < -0.01f)
+                    {
+                        this.gravity += 0.0020f;
+                    }
+                    else
+                    {
+                        this.gravity = -0.01f;
+                    }
+                }
 
-
+            }
             if (this.currentPosition.Y < -10)
             {
                 this.ObjectManager.Remove(this);
@@ -338,16 +285,33 @@ namespace GDLibrary
 
             if (this.managerParameters.KeyboardManager.IsAnyKeyPressed())//CHANGE - To if MoveKeys Are Pressed
             {
-                //Contorls are different For level 2 as Camera is 3rd Person Not Fixed
-                if(this.gameState == GameState.Level1)
+                //Set initial acceleration Values to 0
+                //So if nothing is pressed the acceleration vector will be 0
+                float accelerationX = 0;
+                float accelerationZ = 0;
+
+                // if input is pressed then set the appropriate value
+                if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
                 {
-                    Level1Input(gameTime);
+                    accelerationZ = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
                 }
-                else
+                else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
                 {
-                    Level2Input(gameTime);
+                    accelerationZ = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
                 }
 
+                if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveLeft])) //Left
+                {
+                    accelerationX = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
+                }
+                else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveRight])) //Right
+                {
+                    accelerationX = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
+                }
+
+                //Fianlly set the acceleration Vector
+                //This will allow the player to travel in both X and Z direction at the same time
+                this.accelerationVector = new Vector3(accelerationX, 0, accelerationZ);
             }
             else
             {
@@ -358,93 +322,8 @@ namespace GDLibrary
                 Stop(gameTime);
             }
 
-
-
         }
 
-        protected void Level1Input(GameTime gameTime)
-        {
-            //Set initial acceleration Values to 0
-            //So if nothing is pressed the acceleration vector will be 0
-            float accelerationX = 0;
-            float accelerationZ = 0;
-
-            // if input is pressed then set the appropriate value
-            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
-            {
-                accelerationZ = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-            }
-            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
-            {
-                accelerationZ = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-            }
-
-            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveLeft])) //Left
-            {
-                accelerationX = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-            }
-            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveRight])) //Right
-            {
-                accelerationX = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-            }
-
-            //Fianlly set the acceleration Vector
-            //This will allow the player to travel in both X and Z direction at the same time
-            this.accelerationVector = new Vector3(accelerationX, 0, accelerationZ);
-        }
-
-        protected void Level2Input(GameTime gameTime)
-        {
-
-            //Set initial acceleration Values to 0
-            //So if nothing is pressed the acceleration vector will be 0
-
-            Vector3 acceleration = Vector3.Zero;
-            // if input is pressed then set the appropriate value
-            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveForward])) //Forward
-            {
-                acceleration
-                = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
-                            * this.accelerationSpeed;
-                //accelerationZ = -this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-            }
-            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveBackward])) //Backward
-            {
-                acceleration
-                = this.Transform.Look * gameTime.ElapsedGameTime.Milliseconds
-                            * -this.accelerationSpeed;
-                //accelerationZ = this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds;
-            }
-
-            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveLeft])) //Left
-            {
-                acceleration
-                += this.Transform.Right * gameTime.ElapsedGameTime.Milliseconds
-                    * -this.accelerationSpeed;
-
-            }
-            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexMoveRight])) //Right
-            {
-                acceleration
-                += this.Transform.Right * gameTime.ElapsedGameTime.Milliseconds
-                    * this.accelerationSpeed;
-            }
-
-            //Fianlly set the acceleration Vector
-            //This will allow the player to travel in both X and Z direction at the same time
-            this.accelerationVector = acceleration;
-
-            //Add extra controls to rotate 3rd person Camera
-            if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateLeft]))
-            {
-                this.Transform.RotateIncrement = -gameTime.ElapsedGameTime.Milliseconds * AppData.PlayerRotationSpeed;
-
-            }
-            else if (this.managerParameters.KeyboardManager.IsKeyDown(this.moveKeys[AppData.IndexRotateRight]))
-            {
-                this.Transform.RotateIncrement = gameTime.ElapsedGameTime.Milliseconds * AppData.PlayerRotationSpeed;
-            }
-        }
         protected Vector3 CalculateVelocity()
         {
             //Create temporary Vector for velocity
@@ -454,7 +333,7 @@ namespace GDLibrary
             // and we set current velocity to current position - previous position
             if (this.CollisionVector == Vector3.Zero)
             {
-                TempVelocity = (this.currentPosition - this.previousPosition) - this.platformVector;
+                TempVelocity = (this.currentPosition - this.previousPosition);
             }
             else
             {
@@ -484,7 +363,7 @@ namespace GDLibrary
             //In real life two objects with the same mass would simply swap velocitys
             //But I didnt like the results of this 
             //this is much closer to what I want to happen when two spheres collide
-            return (ColideeVelocity + this.Velocity) + this.Velocity/4;
+            return (ColideeVelocity + this.Velocity) + this.Velocity / 4;
         }
 
         #region AI Logic
@@ -492,7 +371,7 @@ namespace GDLibrary
         protected void Move(GameTime gameTime)
         {
             //accelerate to target
-            if(NumPlayersChanged())
+            if (NumPlayersChanged())
             {
                 this.targetSet = false;
             }
@@ -508,7 +387,7 @@ namespace GDLibrary
             }
             else
             {
-                if(target == Vector3.Zero)
+                if (target == Vector3.Zero)
                 {
 
                     SetInitialPosition(target);
@@ -664,7 +543,7 @@ namespace GDLibrary
                 this.initialPosition = this.currentPosition;
                 this.initialPosSet = true;
             }
-            
+
         }
 
         protected float getStoppingDistance(Vector3 target)//, AxisDirectionType axis)
@@ -672,7 +551,7 @@ namespace GDLibrary
             //Since we accelerate and decelerate at the same rate, 
             //stopping distance will always be half the distance from when we started accelerating towards a vector
             //Adding one means we will stop a very small amount before the target 
-            float stoppingDistance = (Vector3.Distance(target, this.initialPosition)/2) + 1;
+            float stoppingDistance = (Vector3.Distance(target, this.initialPosition) / 2) + 1;
 
             return stoppingDistance;
         }
@@ -705,7 +584,7 @@ namespace GDLibrary
             else
             {
                 //Otherwise Decelerate until small enough to stop
-                if(VelocityX >0)
+                if (VelocityX > 0)
                 {
                     VelocityX = (-this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds);
                 }
@@ -713,7 +592,7 @@ namespace GDLibrary
                 {
                     VelocityX = (this.accelerationSpeed * gameTime.ElapsedGameTime.Milliseconds);
                 }
-               
+
             }
 
             //same as above for z axis
@@ -745,7 +624,7 @@ namespace GDLibrary
             {
                 targetIndex = GetLastPlayerIndex();
             }
-            else if(!IsInMiddle())
+            else if (!IsInMiddle())
             {
                 targetIndex = -1;
             }
@@ -755,10 +634,10 @@ namespace GDLibrary
             }
             else
             {
-                targetIndex = -1;                
+                targetIndex = -1;
             }
 
-            if(targetIndex == -1)
+            if (targetIndex == -1)
             {
                 this.target = Vector3.Zero;
 
@@ -774,11 +653,11 @@ namespace GDLibrary
         {
             int count = 0;
 
-            if(targets != null)
+            if (targets != null)
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    if (targets[i].inGame)
+                    if (targets[i].InGame)
                     {
                         count++;
                     }
@@ -794,7 +673,7 @@ namespace GDLibrary
 
             for (int i = 0; i < 3; i++)
             {
-                if (targets[i].inGame)
+                if (targets[i].InGame)
                 {
                     index = i;
                 }
@@ -811,7 +690,7 @@ namespace GDLibrary
 
             for (int i = 0; i < 3; i++)
             {
-                if (targets[i].inGame)
+                if (targets[i].InGame)
                 {
                     max = targets[0].GetDistanceToTarget(Vector3.Zero);
                 }
@@ -819,7 +698,7 @@ namespace GDLibrary
 
             for (int i = 0; i < 3; i++)
             {
-                if (targets[i].inGame)
+                if (targets[i].InGame)
                 {
                     if (targets[i].GetDistanceToTarget(Vector3.Zero) > max)
                     {
@@ -833,7 +712,7 @@ namespace GDLibrary
 
         protected bool NumPlayersChanged()
         {
-            if(this.previousPlayers != this.currentPlayers)
+            if (this.previousPlayers != this.currentPlayers)
             {
                 return true;
             }
