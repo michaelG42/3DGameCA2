@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Media;
 using System;
 using GDApp.App.Managers;
 using GDLibrary.Enums;
+using GDApp.App.Actors;
 //using GDApp.App.Actors;
 
 /*
@@ -77,6 +78,7 @@ namespace GDApp
         private PlayerCollidablePrimitiveObject[] enemys;
         private PrimitiveDebugDrawer collisionSkinDebugDrawer;
 
+        private PlatformCollidablePrimitiveObject[] platforms;
         private Timer timer;
         private UITextObject GameStateText;
         private GameState gameState;
@@ -404,8 +406,77 @@ namespace GDApp
             //InitializeCollidableAISpheres(arenaScale);
 
             InitializeArena(arenaScale);
+
+            InitializePlatforms();
         }
 
+        private void InitializePlatforms()
+        {
+            this.platforms = new PlatformCollidablePrimitiveObject[10];
+
+
+            InitializePlatform(0, new Transform3D(new Vector3(0, 0.5f, -70), Vector3.Zero, new Vector3(10, 2, 80), Vector3.UnitX, Vector3.UnitY)
+                , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(10, 0.1f, 180 * (5)))
+                , ShapeType.NormalCube);
+
+            InitializePlatform(1, new Transform3D(new Vector3(95, 10f, -80), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
+                , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(-1, 0, 0), new TrigonometricParameters(80, 0.02f, 180 * (5)))
+                , ShapeType.NormalCube);
+
+            InitializePlatform(2, new Transform3D(new Vector3(95, 8f, -10), Vector3.Zero, new Vector3(20, 2, 120), Vector3.UnitX, Vector3.UnitY)
+                ,null
+                , ShapeType.NormalCube);
+
+            InitializePlatform(3, new Transform3D(new Vector3(95, 8f, 61), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
+            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(40, 0.02f, 180 * (5)))
+            , ShapeType.NormalCube);
+
+            InitializePlatform(4, new Transform3D(new Vector3(0, 40, 61), Vector3.Zero, new Vector3(160, 2, 20), Vector3.UnitX, Vector3.UnitY)
+            , null
+            , ShapeType.NormalCube);
+
+            InitializePlatform(5, new Transform3D(new Vector3(-70, 40, -40), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
+            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 0, 1), new TrigonometricParameters(80, 0.02f, 180 * (5)))
+            , ShapeType.NormalCube);
+
+            InitializePlatform(6, new Transform3D(new Vector3(-20, 40, -40), Vector3.Zero, new Vector3(80, 2, 20), Vector3.UnitX, Vector3.UnitY)
+            , null
+            , ShapeType.NormalCube);
+
+            InitializePlatform(7, new Transform3D(new Vector3(30, 40, -40), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
+            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(80, 0.02f, 180 * (5)))
+            , ShapeType.NormalCube);
+        }
+
+        private void InitializePlatform(int index, Transform3D transform, IController controller, ShapeType shapeType)
+        {
+            BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
+
+            PrimitiveObject primativeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, shapeType, effectParameters);
+
+            //set the texture that all clones will have
+            primativeObject.EffectParameters.Texture = this.textureDictionary["ml"];
+
+            BoxCollisionPrimitive collisionPrimitive = new BoxCollisionPrimitive(transform);
+
+            this.platforms[index] = new PlatformCollidablePrimitiveObject(primativeObject, collisionPrimitive,
+                this.managerParameters);
+
+            this.platforms[index].ActorType = ActorType.CollidablePlatform;
+
+            this.platforms[index].Transform = transform;
+
+            #region Translation Lerp
+            //if we want to make the boxes move (or do something else) then just attach a controller
+            if(controller != null)
+            {
+                this.platforms[index].AttachController(controller);
+            }
+            
+            #endregion
+
+            this.objectManager.Add(this.platforms[index]);
+        }
         private void InitializeCollidableAISpheres(int arenaScale)
         {
             //Initialize Enemy Array
@@ -494,18 +565,6 @@ namespace GDApp
 
             this.objectManager.Add(collidablePrimitiveObject);
 
-            #region Tried Arena as zone, to say if player is not in zone apply gravity
-            //SimpleZoneObject simpleZoneObject = null;
-            //ICollisionPrimitive collisionPrimitive = null;
-
-            //collisionPrimitive = new SphereCollisionPrimitive(transform, arenaScale);
-
-            //simpleZoneObject = new SimpleZoneObject(AppData.SwitchToThirdPersonZoneID, ActorType.Zone, transform,
-
-            //StatusType.Drawn | StatusType.Update, collisionPrimitive);
-
-            //this.objectManager.Add(simpleZoneObject); 
-            #endregion
 
         }
 
@@ -546,7 +605,8 @@ namespace GDApp
             PrimitiveObject primitiveObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.ColoredSphere, effectParameters);
 
             //remember the primitive is at Transform3D.Zero so we need to say where we want OUR player to start
-            Transform3D transform = new Transform3D(new Vector3(0, Scale / 2 + 2, position), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
+            //Transform3D transform = new Transform3D(new Vector3(0, Scale / 2 + 2, position), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
+            Transform3D transform = new Transform3D(new Vector3(0, 45, 61), Vector3.Zero, new Vector3(Scale, Scale, Scale), -Vector3.UnitZ, Vector3.UnitY);
 
             //instanciate a box primitive at player position
             SphereCollisionPrimitive collisionPrimitive = new SphereCollisionPrimitive(transform, Scale / 2);
@@ -1108,7 +1168,7 @@ namespace GDApp
                 else if (this.timer.EndTime > 0)
                 {
                     this.timer.finish();
-                    object[] additionalParameters = { GameState.Level1 };
+                    object[] additionalParameters = { GameState.Level2 };
                     EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
                 }
                 else if(this.timer.EndTime >= -5)

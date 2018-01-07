@@ -23,7 +23,7 @@ namespace GDLibrary
         private bool bThirdPersonZoneEventSent;
         private ManagerParameters managerParameters;
 
-        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector;//, collisionVector;
+        private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
 
         private PlayerCollidablePrimitiveObject[] targets;
         private int targetIndex;
@@ -34,6 +34,7 @@ namespace GDLibrary
         private bool initialPosSet;
         private bool inGame;
         private bool collidingWithGround;
+        private bool collidingWithPlatform;
 
         private GameState gameState;
 
@@ -66,6 +67,7 @@ namespace GDLibrary
             this.gravity = 0;
             this.inGame = true;
             this.collidingWithGround = true;
+            this.collidingWithPlatform = false;
             this.previousPlayers = 3;
             this.gameState = GameState.NotStarted;
 
@@ -86,6 +88,7 @@ namespace GDLibrary
             this.positionsInitialized = false;
             this.initialPosSet = false;
             this.collidingWithGround = true;
+            this.collidingWithPlatform = false;
             this.currentDirection = 0;
             this.CollisionVector = Vector3.Zero;
             this.gravity = 0;
@@ -98,6 +101,7 @@ namespace GDLibrary
 
         public override void Update(GameTime gameTime)
         {
+
             this.elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
             this.timer -= elapsed;
             if (!positionsInitialized)
@@ -136,6 +140,7 @@ namespace GDLibrary
 
             //have we collided with something?
             this.collidingWithGround = false;
+            this.collidingWithPlatform = false;
             this.Collidee = CheckCollisions(gameTime);
 
             //how do we respond to this collidee e.g. pickup?
@@ -232,11 +237,28 @@ namespace GDLibrary
 
                     this.targetSet = false;
                 }
-                else if (collidee.ActorType == ActorType.CollidableGround)
+                else if (collidee.ActorType == ActorType.CollidableGround || collidee.ActorType == ActorType.CollidablePlatform)
                 {
                     this.collidingWithGround = true;
+
+                    if (collidee.ActorType == ActorType.CollidablePlatform)
+                    {
+                        this.collidingWithPlatform = true;
+                        this.platformVector = (collidee as CollidablePrimitiveObject).Velocity;
+                    }
+                    else
+                    {
+                        this.platformVector = Vector3.Zero;
+                    }
+
+                    if(this.Transform.Translation.Y < (collidee as CollidablePrimitiveObject).Transform.Translation.Y)
+                    {
+                        this.accelerationVector.Y = 1;
+                    }
+
                     this.Collidee = null;
                 }
+
             }
         }
 
@@ -244,17 +266,13 @@ namespace GDLibrary
         {
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
-            this.Velocity = CalculateVelocity() + this.accelerationVector;
+            
 
-            if(this.gameState == GameState.Level1)
-            {
-                this.Transform.TranslateIncrement = (this.Velocity);
-            }
-            else
-            {
-                //this.Transform.TranslateIncrement += (this.Velocity);
+                this.Velocity = (CalculateVelocity() + (this.platformVector)) + this.accelerationVector ;
+            
                 this.Transform.TranslateBy(this.Velocity);
-            }
+
+
         }
 
         protected float ApplyGravity()
@@ -436,7 +454,7 @@ namespace GDLibrary
             // and we set current velocity to current position - previous position
             if (this.CollisionVector == Vector3.Zero)
             {
-                TempVelocity = (this.currentPosition - this.previousPosition);
+                TempVelocity = (this.currentPosition - this.previousPosition) - this.platformVector;
             }
             else
             {

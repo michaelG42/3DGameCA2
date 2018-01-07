@@ -29,6 +29,7 @@ namespace GDLibrary
         //new with JigLibX
         CollidableEnemy,
         CollidableGround,
+        CollidablePlatform,
         CollidableDecorator,    //e.g. a table, lampshade
         CollidableProp,         //i.e. an interactable prop related to game narrative or game state e.g. door
         CollidableCamera,       //used by first person collidable camera controller
