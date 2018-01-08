@@ -39,6 +39,7 @@ namespace GDLibrary
         public delegate void DebugEventHandler(EventData eventData);
 
         public delegate void GameStateEventHandler(EventData eventData);
+        public delegate void LavaSpeedEventHandler(EventData eventData);
 
         //an event is either null (not yet happened) or non-null - when the event occurs the delegate reads through its list and calls all the listening functions
         public event CameraEventHandler CameraChanged;
@@ -58,7 +59,7 @@ namespace GDLibrary
         public event DebugEventHandler DebugChanged;
 
         public event GameStateEventHandler GameStateChanged;
-
+        public event LavaSpeedEventHandler LavaSpeedChanged;
 
 
         public EventDispatcher(Game game, int initialSize)
@@ -161,6 +162,9 @@ namespace GDLibrary
                     OnGameState(eventData);
                     break;
 
+                case EventCategoryType.LavaSpeed:
+                    OnLavaSpeed(eventData);
+                    break;
                 default:
                     break;
             }
@@ -189,6 +193,11 @@ namespace GDLibrary
         protected virtual void OnGameState(EventData eventData)
         {
             GameStateChanged?.Invoke(eventData);
+        }
+
+        protected virtual void OnLavaSpeed(EventData eventData)
+        {
+            LavaSpeedChanged?.Invoke(eventData);
         }
         //called when a screen event needs to be generated (e.g. change screen layout)
         protected virtual void OnScreen(EventData eventData)

@@ -22,6 +22,11 @@ namespace GDLibrary
         private Keys[] moveKeys;
         private bool winZoneEventSent;
         private bool looseZoneEventSent;
+
+        private bool LavaZoneEventSent1;
+        private bool LavaZoneEventSent2;
+        private bool LavaZoneEventSent3;
+        private bool LavaZoneEventSent4;
         private ManagerParameters managerParameters;
 
         private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
@@ -35,6 +40,8 @@ namespace GDLibrary
         private bool initialPosSet;
         private bool inGame;
         private bool collidingWithGround;
+
+
 
         public PlayerCollidablePrimitiveObject[] Targets { get => targets; set => targets = value; }
         public bool InGame { get => inGame; set => inGame = value; }
@@ -207,6 +214,7 @@ namespace GDLibrary
                     //setting this to null means that the ApplyInput() method will get called and the player can move through the zone.
                     this.Collidee = null;
                 }
+
             }
             else if (collidee is CollidablePrimitiveObject)
             {
@@ -405,7 +413,7 @@ namespace GDLibrary
 
         protected void Level2Input(GameTime gameTime)
         {
-            Console.WriteLine("Level2 Input");
+
             //Set initial acceleration Values to 0
             //So if nothing is pressed the acceleration vector will be 0
 

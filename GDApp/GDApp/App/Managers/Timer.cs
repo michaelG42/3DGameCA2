@@ -32,7 +32,7 @@ namespace GDApp.App.Managers
 
         public void set(GameTime gameTime, int seconds)
         {
-            this.StartTime = gameTime.TotalGameTime.Seconds;
+            this.StartTime = (int)gameTime.TotalGameTime.TotalSeconds;
             this.EndTime = this.StartTime - seconds;
             this.IsActive = true;
             this.Display = Math.Abs(this.EndTime).ToString();

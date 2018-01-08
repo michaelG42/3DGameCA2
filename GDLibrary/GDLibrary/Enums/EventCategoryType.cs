@@ -30,7 +30,8 @@ namespace GDLibrary
         Mouse,              //used to send mouse related events e.g. set mouse position
         Video,
         GlobalSound,
-        GameState
+        GameState,
+        LavaSpeed
         //all other categories of sender...
     }
 }

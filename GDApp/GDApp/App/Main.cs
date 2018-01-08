@@ -74,20 +74,24 @@ namespace GDApp
         private ManagerParameters managerParameters;
         private MyPrimitiveFactory primitiveFactory;
         private PlayerCollidablePrimitiveObject playerCollidablePrimitiveObject;
-
+        private PrimitiveObject lava;
         private PlayerCollidablePrimitiveObject[] enemys;
         private PrimitiveDebugDrawer collisionSkinDebugDrawer;
 
         private PlatformCollidablePrimitiveObject[] platforms;
         private Timer timer;
         private int InitialTimerTime;
+        private int lavaTimer;
         private UITextObject GameStateText;
         private GameState gameState;
+        private SimpleZoneObject looseZoneObject;
+        private float lavaSpeed;
 
         private bool level2Initalized;
         private bool opacitySet;
         private bool thirdPersonEventSent;
         private bool introCameraSkipped;
+        private bool lavaTimerSet;
         #endregion
 
         #region Properties
@@ -424,7 +428,7 @@ namespace GDApp
 
             if (!this.level2Initalized)
             {
-
+                this.lavaSpeed = 0.001f;
                 this.playerCollidablePrimitiveObject.Transform.TranslateTo(new Vector3(0,5,0));
                 InitializePlatforms();
                 this.level2Initalized = true;
@@ -448,7 +452,7 @@ namespace GDApp
                 , ShapeType.NormalCube);
 
             InitializePlatform(1, new Transform3D(new Vector3(95, 10f, -80), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
-                , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(-1, 0, 0), new TrigonometricParameters(80, 0.02f, 180 * (5)))
+                , new TranslationSineLerpController("transControl2", ControllerType.LerpTranslation, new Vector3(-1, 0, 0), new TrigonometricParameters(80, 0.02f, 180 * (5)))
                 , ShapeType.NormalCube);
 
             InitializePlatform(2, new Transform3D(new Vector3(95, 8f, -10), Vector3.Zero, new Vector3(20, 2, 120), Vector3.UnitX, Vector3.UnitY)
@@ -456,7 +460,7 @@ namespace GDApp
                 , ShapeType.NormalCube);
 
             InitializePlatform(3, new Transform3D(new Vector3(95, 8f, 61), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
-            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(40, 0.02f, 180 * (5)))
+            , new TranslationSineLerpController("transControl3", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(40, 0.02f, 180 * (5)))
             , ShapeType.NormalCube);
 
             InitializePlatform(4, new Transform3D(new Vector3(0, 40, 61), Vector3.Zero, new Vector3(160, 2, 20), Vector3.UnitX, Vector3.UnitY)
@@ -464,7 +468,7 @@ namespace GDApp
             , ShapeType.NormalCube);
 
             InitializePlatform(5, new Transform3D(new Vector3(-70, 40, -40), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
-            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 0, 1), new TrigonometricParameters(80, 0.02f, 180 * (5)))
+            , new TranslationSineLerpController("transControl4", ControllerType.LerpTranslation, new Vector3(0, 0, 1), new TrigonometricParameters(80, 0.02f, 180 * (5)))
             , ShapeType.NormalCube);
 
             InitializePlatform(6, new Transform3D(new Vector3(-20, 40, -40), Vector3.Zero, new Vector3(80, 2, 20), Vector3.UnitX, Vector3.UnitY)
@@ -472,7 +476,7 @@ namespace GDApp
             , ShapeType.NormalCube);
 
             InitializePlatform(7, new Transform3D(new Vector3(30, 40, -40), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
-            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(40, 0.02f, 180 * (5)))
+            , new TranslationSineLerpController("transControl5", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(40, 0.02f, 180 * (5)))
             , ShapeType.NormalCube);
 
             InitializePlatform(8, new Transform3D(new Vector3(30, 80, 10), Vector3.Zero, new Vector3(20, 2, 80), Vector3.UnitX, Vector3.UnitY)
@@ -480,7 +484,7 @@ namespace GDApp
             , ShapeType.NormalCube);
 
             InitializePlatform(9, new Transform3D(new Vector3(-30, 80, 60), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
-            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(1, 0, 0), new TrigonometricParameters(60, 0.02f, 180 * (5)))
+            , new TranslationSineLerpController("transControl6", ControllerType.LerpTranslation, new Vector3(1, 0, 0), new TrigonometricParameters(60, 0.02f, 180 * (5)))
             , ShapeType.NormalCube);
 
             InitializePlatform(10, new Transform3D(new Vector3(-50, 80, 30), Vector3.Zero, new Vector3(20, 2, 80), Vector3.UnitX, Vector3.UnitY)
@@ -488,7 +492,7 @@ namespace GDApp
             , ShapeType.NormalCube);
 
             InitializePlatform(11, new Transform3D(new Vector3(-50, 80, -20), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
-            , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(60, 0.02f, 180 * (5)))
+            , new TranslationSineLerpController("transControl7", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(60, 0.02f, 180 * (5)))
             , ShapeType.NormalCube);
 
             InitializePlatform(12, new Transform3D(new Vector3(0, 140, 10), Vector3.Zero, new Vector3(80, 2, 80), Vector3.UnitX, Vector3.UnitY)
@@ -543,7 +547,7 @@ namespace GDApp
 
             #region Loose Zone
             Transform3D looseTransform = null;
-            SimpleZoneObject looseZoneObject = null;
+            this.looseZoneObject = null;
             ICollisionPrimitive looseCollisionPrimitive = null;
 
             //place the zone and scale it based on how big you want the zone to be
@@ -553,10 +557,10 @@ namespace GDApp
             looseCollisionPrimitive = new BoxCollisionPrimitive(looseTransform);
             //collisionPrimitive = new BoxCollisionPrimitive(transform);
 
-            looseZoneObject = new SimpleZoneObject(AppData.LooseZoneID, ActorType.Zone, looseTransform,
+            this.looseZoneObject = new SimpleZoneObject(AppData.LooseZoneID, ActorType.Zone, looseTransform,
                 StatusType.Drawn | StatusType.Update, looseCollisionPrimitive);//, mParams);
 
-            this.objectManager.Add(looseZoneObject);
+            this.objectManager.Add(this.looseZoneObject);
             #endregion
 
 
@@ -690,20 +694,20 @@ namespace GDApp
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
 
             //get the primitive object from the factory (remember the factory returns a clone)
-            PrimitiveObject ground = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
+            this.lava = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
 
             //set the texture
-            ground.EffectParameters.Texture = this.textureDictionary["Lava"];
+            this.lava.EffectParameters.Texture = this.textureDictionary["Lava"];
 
             //set the transform
             //since the object is 1 unit in height, we move it down to Y-axis == -0.5f so that the top of the surface is at Y == 0
-            ground.Transform = new Transform3D(new Vector3(0, -0.5f, 0), new Vector3(worldScale, 1, worldScale));
+            this.lava.Transform = new Transform3D(new Vector3(0, -0.5f, 0), new Vector3(worldScale, 1, worldScale));
 
             //set an ID if we want to access this later
-            ground.ID = "non-collidable ground";
+            this.lava.ID = "non-collidable lava";
 
             //add 
-            this.objectManager.Add(ground);
+            this.objectManager.Add(this.lava);
 
         }
 
@@ -1349,6 +1353,7 @@ namespace GDApp
         }
         private void CheckGameState(GameTime gameTime)
         {
+            
             UpdateGameText(gameTime);
             if(this.gameState == GameState.Level1)
             {
@@ -1357,6 +1362,11 @@ namespace GDApp
             if(this.gameState == GameState.Level2Intro)
             {
                 InitializeLevel2();
+            }
+            if(this.gameState == GameState.Level2)
+            {
+                RaiseLava(gameTime);
+
             }
         }
         private void UpdateGameText(GameTime gameTime)
@@ -1435,6 +1445,13 @@ namespace GDApp
                 else if (this.timer.EndTime > 0)
                 {
                     this.timer.finish();
+                    this.timer.reset();
+                    if(!this.lavaTimerSet)
+                    {
+                        this.lavaTimer = gameTime.TotalGameTime.Seconds + 180;
+                        this.lavaTimerSet = true;
+                    }
+
                     object[] additionalParameters = { GameState.Level2 };
                     EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
                 }
@@ -1461,6 +1478,38 @@ namespace GDApp
                 }
             }
 
+        }
+
+        private void RaiseLava(GameTime gameTime)
+        {
+            this.timer.set(gameTime, lavaTimer);
+            if (this.timer.EndTime >= -150)
+            {
+                this.lavaSpeed = 0.002f;
+            }
+            else if(this.timer.EndTime >= -130)
+            {
+                this.lavaSpeed = 0.004f;
+            }
+            else if (this.timer.EndTime >= -100)
+            {
+                this.lavaSpeed = 0.01f;
+            }
+            else if (this.timer.EndTime >= -60)
+            {
+                this.lavaSpeed = 0.015f;
+            }
+            else if (this.timer.EndTime >= -30)
+            {
+                this.lavaSpeed = 0.02f;
+            }
+            else if (this.timer.EndTime >= 0)
+            {
+                this.lavaSpeed = 0.04f;
+            }
+
+            this.lava.Transform.TranslateBy(new Vector3(0, this.lavaSpeed, 0));
+            this.looseZoneObject.Transform.TranslateBy(new Vector3(0, this.lavaSpeed, 0));
         }
         #endregion
 
@@ -1575,11 +1624,17 @@ namespace GDApp
         protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
         {
             eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
+            eventDispatcher.LavaSpeedChanged += EventDispatcher_LavaSpeedChanged;
         }
         protected void EventDispatcher_GameStateChanged(EventData eventData)
         {
             
             this.gameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
+        }
+
+        protected void EventDispatcher_LavaSpeedChanged(EventData eventData)
+        {
+            this.lavaSpeed = (float)eventData.AdditionalParameters[0];
         }
 
         protected override void Update(GameTime gameTime)
