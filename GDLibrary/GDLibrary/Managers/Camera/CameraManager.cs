@@ -72,6 +72,7 @@ namespace GDLibrary
             {
                 //using the additional parameters channel of the event data object - ensure that the ID is set as first element in the array
                 SetActiveCamera(x => x.ID.Equals(eventData.AdditionalParameters[0] as string));
+                this.ActiveCamera.StatusType = StatusType.Update;
             }
         }
 

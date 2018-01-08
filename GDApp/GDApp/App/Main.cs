@@ -84,6 +84,10 @@ namespace GDApp
         private UITextObject GameStateText;
         private GameState gameState;
 
+        private bool level2Initalized;
+        private bool opacitySet;
+        private bool thirdPersonEventSent;
+        private bool introCameraSkipped;
         #endregion
 
         #region Properties
@@ -134,11 +138,11 @@ namespace GDApp
             AddUIElements();
 
 
-            LoadGame(); 
+            LoadGame();
 
             //Add Camera(s)
-            InitializeCameraDemo(screenResolution);
-            InitializeIntroCamera(screenResolution);
+            InitializeCameras(screenResolution);
+
             //Publish Start Event(s)
             StartGame();
 
@@ -397,6 +401,10 @@ namespace GDApp
             //non-collidable ground
             int worldScale = 300;
             int arenaScale = 30;
+            this.level2Initalized = false;
+
+            //Initial timer is Countdown of 5 seconds + the introCamera time
+            this.InitialTimerTime = 24;
             InitializeNonCollidableGround(worldScale);
             InitializeNonCollidableSkyBox(worldScale);
            // InitializeCollidableDecorators();
@@ -409,13 +417,31 @@ namespace GDApp
             InitializeArena(arenaScale);
 
             //InitializePlatforms();
-            //InitializeCollidableZones();
+            InitializeCollidableZones();
         }
+        private void InitializeLevel2()
+        {
+
+            if (!this.level2Initalized)
+            {
+
+                this.playerCollidablePrimitiveObject.Transform.TranslateTo(new Vector3(0,5,0));
+                InitializePlatforms();
+                this.level2Initalized = true;
+            }
+            if(!opacitySet)
+            {
+                OpacifyPlatforms();
+            }
+            
+        }
+
 
         private void InitializePlatforms()
         {
             this.platforms = new PlatformCollidablePrimitiveObject[13];
 
+            this.opacitySet = false;
 
             InitializePlatform(0, new Transform3D(new Vector3(0, 0.5f, -70), Vector3.Zero, new Vector3(10, 2, 80), Vector3.UnitX, Vector3.UnitY)
                 , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(10, 0.1f, 180 * (5)))
@@ -465,9 +491,34 @@ namespace GDApp
             , new TranslationSineLerpController("transControl1", ControllerType.LerpTranslation, new Vector3(0, 1, 0), new TrigonometricParameters(60, 0.02f, 180 * (5)))
             , ShapeType.NormalCube);
 
-            InitializePlatform(10, new Transform3D(new Vector3(0, 140, 10), Vector3.Zero, new Vector3(80, 2, 80), Vector3.UnitX, Vector3.UnitY)
+            InitializePlatform(12, new Transform3D(new Vector3(0, 140, 10), Vector3.Zero, new Vector3(80, 2, 80), Vector3.UnitX, Vector3.UnitY)
             , null
             , ShapeType.NormalCube);
+
+            
+        }
+
+        private void OpacifyPlatforms()
+        {
+            int count = 0;
+
+                for (int i = 0; i < platforms.Length; i++)
+                {
+                    platforms[i].Alpha += 0.005f;
+                if(platforms[i].Alpha == 1)
+                {
+                    count++;
+                }
+                }
+
+            if(count == platforms.Length)
+            {
+                this.opacitySet = true;
+            }
+
+            //Console.WriteLine("ALPHA ids");
+
+
         }
 
         private void InitializeCollidableZones()
@@ -487,7 +538,25 @@ namespace GDApp
             winZoneObject = new SimpleZoneObject(AppData.WinZoneID, ActorType.Zone, winTransform,
                 StatusType.Drawn | StatusType.Update, winCollisionPrimitive);//, mParams);
 
-            this.objectManager.Add(winZoneObject); 
+            this.objectManager.Add(winZoneObject);
+            #endregion
+
+            #region Loose Zone
+            Transform3D looseTransform = null;
+            SimpleZoneObject looseZoneObject = null;
+            ICollisionPrimitive looseCollisionPrimitive = null;
+
+            //place the zone and scale it based on how big you want the zone to be
+            looseTransform = new Transform3D(new Vector3(0, -8, 0), new Vector3(300, 10, 300));
+
+            //we can have a sphere or a box - its entirely up to the developer
+            looseCollisionPrimitive = new BoxCollisionPrimitive(looseTransform);
+            //collisionPrimitive = new BoxCollisionPrimitive(transform);
+
+            looseZoneObject = new SimpleZoneObject(AppData.LooseZoneID, ActorType.Zone, looseTransform,
+                StatusType.Drawn | StatusType.Update, looseCollisionPrimitive);//, mParams);
+
+            this.objectManager.Add(looseZoneObject);
             #endregion
 
 
@@ -501,6 +570,8 @@ namespace GDApp
             //set the texture that all clones will have
             primativeObject.EffectParameters.Texture = this.textureDictionary["ml"];
 
+  
+
             BoxCollisionPrimitive collisionPrimitive = new BoxCollisionPrimitive(transform);
 
             this.platforms[index] = new PlatformCollidablePrimitiveObject(primativeObject, collisionPrimitive,
@@ -510,9 +581,10 @@ namespace GDApp
 
             this.platforms[index].Transform = transform;
 
+            this.platforms[index].EffectParameters.Alpha = 0;
             #region Translation Lerp
             //if we want to make the boxes move (or do something else) then just attach a controller
-            if(controller != null)
+            if (controller != null)
             {
                 this.platforms[index].AttachController(controller);
             }
@@ -870,6 +942,13 @@ namespace GDApp
         #endregion
 
         #region Initialize Cameras
+        private void InitializeCameras(Integer2 screenResolution)
+        {
+            InitializeThirdPersonCamera(screenResolution);
+            InitializeIntroCamera(screenResolution);
+            InitializeLevel1Camera(screenResolution);
+            InitializeLevel2IntroCamera(screenResolution);
+        }
         private void InitializeCamera(Integer2 screenResolution, string id, Viewport viewPort, Transform3D transform, IController controller, float drawDepth, StatusType statusType)
         {
             Camera3D camera = new Camera3D(id, ActorType.Camera, transform, ProjectionParameters.StandardShallowSixteenNine, viewPort, drawDepth, statusType);
@@ -881,13 +960,13 @@ namespace GDApp
         }
 
         //adds three camera from 3 different perspectives that we can cycle through
-        private void InitializeCameraDemo(Integer2 screenResolution)
+        private void InitializeThirdPersonCamera(Integer2 screenResolution)
         {
             #region Flight Camera
             Transform3D transform = new Transform3D(new Vector3(0, 45, 65), new Vector3(0, -0.6f, -0.8f), Vector3.UnitY);
 
             IController controller = new FlightCameraController("fcc", ControllerType.FirstPerson, AppData.CameraMoveKeys,
-                AppData.CameraMoveSpeed, AppData.CameraStrafeSpeed, AppData.CameraRotationSpeed, this.managerParameters);
+               AppData.CameraMoveSpeed, AppData.CameraStrafeSpeed, AppData.CameraRotationSpeed, this.managerParameters);
 
             //InitializeCamera(screenResolution, AppData.FlightCameraID, this.viewPortDictionary["full viewport"], transform, null, 0, StatusType.Update);
             #endregion
@@ -915,14 +994,36 @@ namespace GDApp
             
             Transform3D transform = null;
             IController controller = null;
-            string id = "";
             string viewportDictionaryKey = "full viewport";
 
             //track camera 1
-            id = "IntroCurveCamera";
+
             transform = new Transform3D(new Vector3(0, 0, 20), -Vector3.UnitZ, Vector3.UnitY);
-            controller = new CurveController(id + " controller", ControllerType.Track, this.curveDictionary["introCurveCamera"], PlayStatusType.Play);
-            InitializeCamera(screenResolution, id, this.viewPortDictionary[viewportDictionaryKey], transform, controller, 0, StatusType.Off);
+            controller = new CurveController(AppData.IntroCurveCameraID + " controller", ControllerType.Track, this.curveDictionary["introCurveCamera"], PlayStatusType.Play);
+            InitializeCamera(screenResolution, AppData.IntroCurveCameraID, this.viewPortDictionary[viewportDictionaryKey], transform, controller, 0, StatusType.Off);
+
+        }
+
+        private void InitializeLevel1Camera(Integer2 screenResolution)
+        {
+
+            Transform3D transform = new Transform3D(new Vector3(0, 45, 65), new Vector3(0, -0.6f, -0.8f), Vector3.UnitY);
+
+            string viewportDictionaryKey = "full viewport";
+
+            InitializeCamera(screenResolution, AppData.Level1FixedCameraID, this.viewPortDictionary[viewportDictionaryKey], transform, null, 0, StatusType.Off);
+
+        }
+
+        private void InitializeLevel2IntroCamera(Integer2 screenResolution)
+        {
+
+            Transform3D transform = new Transform3D(new Vector3(-145, 100, 75), new Vector3(0.8f, -0.4f, -0.4f), Vector3.UnitY);
+
+            string viewportDictionaryKey = "full viewport";
+
+            InitializeCamera(screenResolution, AppData.Level2FixedCameraID, this.viewPortDictionary[viewportDictionaryKey], transform, null, 0, StatusType.Off);
+
         }
 
 
@@ -944,8 +1045,7 @@ namespace GDApp
             EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.MainMenu));
 
             //publish an event to set the camera
-            object[] additionalEventParamsB = { AppData.FlightCameraID };
-            EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+
             //we could also just use the line below, but why not use our event dispatcher?
             //this.cameraManager.SetActiveCamera(x => x.ID.Equals("collidable first person camera 1"));
         }
@@ -1254,6 +1354,10 @@ namespace GDApp
             {
                 checkLevel1Win(gameTime);
             }
+            if(this.gameState == GameState.Level2Intro)
+            {
+                InitializeLevel2();
+            }
         }
         private void UpdateGameText(GameTime gameTime)
         {
@@ -1275,9 +1379,13 @@ namespace GDApp
                 case GameState.Level2:
                     this.GameStateText.Text = "";
                     break;
-                case GameState.Finished:
+                case GameState.Won:
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (7 * 62)) / 2, 60);
                     this.GameStateText.Text = "YOU WIN!";
+                    break;
+                case GameState.Lost:
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (7 * 62)) / 2, 60);
+                    this.GameStateText.Text = "Game Over!";
                     break;
             }
 
@@ -1289,7 +1397,8 @@ namespace GDApp
             
             if(!this.timer.IsComplete)
             {
-                this.timer.set(gameTime, 4);
+                
+                this.timer.set(gameTime, InitialTimerTime);
 
                 if (this.timer.EndTime == 0)
                 {
@@ -1314,7 +1423,6 @@ namespace GDApp
         private void CountDownLevel2(GameTime gameTime)
         {
 
-            
             if (!this.timer.IsComplete)
             {
                 this.timer.set(gameTime, InitialTimerTime + 15);
@@ -1333,6 +1441,13 @@ namespace GDApp
                 else if (this.timer.EndTime >= -5)
                 {
                     this.GameStateText.Text = this.timer.Display;
+                    if(!this.thirdPersonEventSent)
+                    {
+                        object[] additionalEventParamsB = { AppData.ThirdPersonCameraID };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+                        this.thirdPersonEventSent = true;
+                    }
+
                 }
                 else if (this.timer.EndTime >= -10)
                 {
@@ -1394,7 +1509,10 @@ namespace GDApp
             {
                 this.timer.reset();
                 this.InitialTimerTime = gameTime.TotalGameTime.Seconds;
-                
+
+                object[] additionalEventParamsB = { AppData.Level2FixedCameraID };
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+
                 object[] additionalParameters = { GameState.Level2Intro };
                 EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
             }
@@ -1485,10 +1603,10 @@ namespace GDApp
 
         private void DoCameraCycle()
         {
-            //if (this.keyboardManager.IsFirstKeyPress(Keys.F1))
-            //{
-            //    EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
-            //}
+            if (this.keyboardManager.IsFirstKeyPress(Keys.F1))
+            {
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraCycle, EventCategoryType.Camera));
+            }
         }
 
         private void DoDebugToggleDemo()
@@ -1510,6 +1628,18 @@ namespace GDApp
             {
                 //we can turn all debug off 
                 EventDispatcher.Publish(new EventData(EventActionType.OnToggleDebug, EventCategoryType.Debug));
+            }
+
+            if (this.keyboardManager.IsFirstKeyPress(Keys.S))
+            {
+                if(!this.introCameraSkipped)
+                {
+                    this.InitialTimerTime = this.timer.StartTime + 5;
+                    object[] additionalEventParamsB = { AppData.Level1FixedCameraID };
+                    EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+                    this.introCameraSkipped = true;
+                }
+
             }
 
         }

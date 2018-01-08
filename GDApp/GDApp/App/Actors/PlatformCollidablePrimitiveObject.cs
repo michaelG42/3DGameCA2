@@ -37,7 +37,7 @@ namespace GDApp.App.Actors
 
             this.previousPosition = this.currentPosition;
 
-            Console.WriteLine("Velocity is " + this.Velocity);
+            //Console.WriteLine("Velocity is " + this.Velocity);
         }
 
         protected Vector3 CalculateVelocity()

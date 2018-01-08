@@ -148,8 +148,14 @@ namespace GDLibrary
         #endregion
 
         #region Camera IDs
-        public static readonly string FlightCameraID = "flight camera 1";
-        public static readonly string ThirdPersonCameraID = "third person camera 1";
+        public static readonly string FlightCameraID = "Flight camera";
+        public static readonly string ThirdPersonCameraID = "Third person camera";
+
+        public static readonly string Level1FixedCameraID = "Level 1 fixed camera";
+        public static readonly string Level2FixedCameraID = "Level 2 fixed camera";
+
+        public static readonly string IntroCurveCameraID = "Intro Curve camera";
+
         #endregion
 
         #region Zone IDs

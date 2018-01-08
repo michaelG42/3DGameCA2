@@ -12,6 +12,7 @@ namespace GDLibrary.Enums
         Level1,
         Level2Intro,
         Level2,
-        Finished
+        Won,
+        Lost
     }
 }

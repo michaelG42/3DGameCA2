@@ -20,7 +20,8 @@ namespace GDLibrary
         private int currentPlayers;
         private int previousPlayers;
         private Keys[] moveKeys;
-        private bool bThirdPersonZoneEventSent;
+        private bool winZoneEventSent;
+        private bool looseZoneEventSent;
         private ManagerParameters managerParameters;
 
         private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
@@ -177,16 +178,30 @@ namespace GDLibrary
 
         protected override void HandleCollisionResponse(Actor collidee)
         {
-            if (collidee is SimpleZoneObject)
+            if ((collidee is SimpleZoneObject) && (this.ActorType == ActorType.Player))
             {
                 if (collidee.ID.Equals(AppData.WinZoneID))
                 {
-                    if (!bThirdPersonZoneEventSent) //add a boolean to stop the event being sent multiple times!
+                    if (!winZoneEventSent) //add a boolean to stop the event being sent multiple times!
                     {
                         //publish some sort of event - maybe an event to switch the camera?
-                        object[] additionalParameters = { AppData.ThirdPersonCameraID };
-                        EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalParameters));
-                        bThirdPersonZoneEventSent = true;
+                        object[] additionalParameters = { GameState.Won };
+                        EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+                        winZoneEventSent = true;
+                    }
+
+                    //setting this to null means that the ApplyInput() method will get called and the player can move through the zone.
+                    this.Collidee = null;
+                }
+
+                if (collidee.ID.Equals(AppData.LooseZoneID))
+                {
+                    if (!looseZoneEventSent) //add a boolean to stop the event being sent multiple times!
+                    {
+                        //publish some sort of event - maybe an event to switch the camera?
+                        object[] additionalParameters = { GameState.Lost };
+                        EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+                        looseZoneEventSent = true;
                     }
 
                     //setting this to null means that the ApplyInput() method will get called and the player can move through the zone.
@@ -257,10 +272,19 @@ namespace GDLibrary
         {
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
+            if(this.ActorType == ActorType.CollidableEnemy)
+            {
+                this.accelerationVector = -this.accelerationVector;
+            }
             this.Velocity = CalculateVelocity() + this.accelerationVector;
             if(this.GameState == GameState.Level2)
             {
                 this.Velocity += this.platformVector;
+            }
+
+            if((this.ActorType == ActorType.Player) && (this.GameState != GameState.Level1 && this.GameState != GameState.Level2))
+            {
+                this.Velocity = Vector3.Zero;
             }
             if (this.GameState == GameState.Level1)
                 this.Transform.TranslateIncrement = (this.Velocity);
@@ -301,7 +325,7 @@ namespace GDLibrary
                 }
 
             }
-            else if (this.GameState == GameState.Level2)
+            else //if (this.GameState == GameState.Level2)
             {
                 if (!collidingWithGround)
                 {
@@ -444,7 +468,7 @@ namespace GDLibrary
                 TempVelocity = (this.currentPosition - this.previousPosition);
                 if(this.GameState == GameState.Level2)
                 {
-                    TempVelocity -= -this.platformVector;
+                    TempVelocity -= this.platformVector;
                 }
             }
             else
