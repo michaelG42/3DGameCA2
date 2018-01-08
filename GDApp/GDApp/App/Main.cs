@@ -11,7 +11,6 @@ using GDApp.App.Managers;
 using GDLibrary.Enums;
 using GDApp.App.Actors;
 //using GDApp.App.Actors;
-//test commit
 /*
  * Diffuse color not pickup up when drawing primitive objects
  * TranslationLerpController
@@ -163,7 +162,7 @@ namespace GDApp
             ScreenUtility.ScreenType screenType, bool isMouseVisible, int numberOfGamePadPlayers) //1 - 4
         {
             //add sound manager
-            this.soundManager = new SoundManager(this, this.eventDispatcher, StatusType.Update, "Content/Assets/Audio/", "Demo2DSound.xgs", "WaveBank1.xwb", "SoundBank1.xsb");
+            this.soundManager = new SoundManager(this, this.eventDispatcher, StatusType.Update, "Content/Assets/Audio/", "Sounds.xgs", "WaveBank1.xwb", "SoundBank1.xsb");
             Components.Add(this.soundManager);
 
             this.cameraManager = new CameraManager(this, 1, this.eventDispatcher);
