@@ -9,7 +9,7 @@ namespace GDApp
     {
         private bool firstStart = true;
         public MyAppMenuManager(Game game, MouseManager mouseManager, KeyboardManager keyboardManager, CameraManager cameraManager,
-            SpriteBatch spriteBatch, EventDispatcher eventDispatcher, 
+            SpriteBatch spriteBatch, EventDispatcher eventDispatcher,
             StatusType statusType) : base(game, mouseManager, keyboardManager, cameraManager, spriteBatch, eventDispatcher, statusType)
         {
 
@@ -46,65 +46,73 @@ namespace GDApp
 
         }
 
+        protected override void HandleMouseEntered(UIObject clickedUIObject)
+        {
 
+            object[] additionalParameters = { "ButtonHover" };
+            EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParameters));
+        }
 
         //add the code here to say how click events are handled by your code
         protected override void HandleMouseClick(UIObject clickedUIObject, GameTime gameTime)
         {
-                //notice that the IDs are the same as the button IDs specified when we created the menu in Main::AddMenuElements()
-                switch (clickedUIObject.ID)
-                {
-                    case "startbtn":
-                        DoStart();
-                        break;
+            object[] additionalParameters = { "ButtonClick" };
+            EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParameters));
+            System.Console.WriteLine("Somthing");
+            //notice that the IDs are the same as the button IDs specified when we created the menu in Main::AddMenuElements()
+            switch (clickedUIObject.ID)
+            {
+                case "startbtn":
+                    DoStart();
+                    break;
 
-                    case "exitbtn":
-                        DoExit();
-                        break;
+                case "exitbtn":
+                    DoExit();
+                    break;
 
-                    case "audiobtn":
-                        SetActiveList("audio menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
-                        break;
+                case "audiobtn":
+                    SetActiveList("audio menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
+                    break;
 
-                    case "volumeUpbtn":
-                        { //curly brackets scope additionalParameters to be local to this case
-                            object[] additionalParameters = { 0.1f };
-                            EventDispatcher.Publish(new EventData(EventActionType.OnVolumeUp, EventCategoryType.GlobalSound, additionalParameters));
-                        }
-                        break;
-
-                    case "volumeDownbtn":
-                        {  
-                            object[] additionalParameters = { 0.1f };
-                            EventDispatcher.Publish(new EventData(EventActionType.OnVolumeDown, EventCategoryType.GlobalSound, additionalParameters));
-                        }
-                        break;
-
-                    case "volumeMutebtn":
-                        {
-                            object[] additionalParameters = { 0.0f, "Xact category name for game sounds goes here..."};
-                            EventDispatcher.Publish(new EventData(EventActionType.OnMute, EventCategoryType.GlobalSound, additionalParameters));
-                        }
-                        break;
-
-                    case "volumeUnMutebtn":
-                    {
-                        object[] additionalParameters = { 0.5f, "Xact category name for game sounds goes here..." };
-                        EventDispatcher.Publish(new EventData(EventActionType.OnUnMute, EventCategoryType.GlobalSound, additionalParameters));
+                case "volumeUpbtn":
+                    { //curly brackets scope additionalParameters to be local to this case
+                        object[] volumeUp = { 0.1f };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeUp, EventCategoryType.GlobalSound, volumeUp));
                     }
                     break;
 
-                    case "backbtn":
-                        SetActiveList("main menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
-                        break;
+                case "volumeDownbtn":
+                    {
+                        object[] volumeDown = { 0.1f };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeDown, EventCategoryType.GlobalSound, volumeDown));
+                    }
+                    break;
 
-                    case "controlsbtn":
-                        SetActiveList("controls menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
-                        break;
+                case "volumeMutebtn":
+                    {
+                        object[] soundsMute = { 0.0f, "Default" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnMute, EventCategoryType.GlobalSound, soundsMute));
+                    }
+                    break;
 
-                    default:
-                        break;
-                }
+                case "volumeUnMutebtn":
+                    {
+                        object[] musicMute = { 0.5f, "Music" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnUnMute, EventCategoryType.GlobalSound, musicMute));
+                    }
+                    break;
+
+                case "backbtn":
+                    SetActiveList("main menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
+                    break;
+
+                case "controlsbtn":
+                    SetActiveList("controls menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
+                    break;
+
+                default:
+                    break;
+            }
 
             //add event to play mouse click sound here...
 

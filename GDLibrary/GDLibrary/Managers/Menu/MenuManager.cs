@@ -39,8 +39,8 @@ namespace GDLibrary
         }
         #endregion
 
-        public MenuManager(Game game, MouseManager mouseManager, KeyboardManager keyboardManager, 
-            CameraManager cameraManager, SpriteBatch spriteBatch, EventDispatcher eventDispatcher, 
+        public MenuManager(Game game, MouseManager mouseManager, KeyboardManager keyboardManager,
+            CameraManager cameraManager, SpriteBatch spriteBatch, EventDispatcher eventDispatcher,
             StatusType statusType)
             : base(game, eventDispatcher, statusType)
         {
@@ -59,7 +59,7 @@ namespace GDLibrary
         //See ScreenManager::EventDispatcher_MenuChanged to see how it does the reverse i.e. they are mutually exclusive
         protected override void EventDispatcher_MenuChanged(EventData eventData)
         {
-            
+
             //did the event come from the main menu and is it a start game event
             if (eventData.EventType == EventActionType.OnStart)
             {
@@ -84,7 +84,7 @@ namespace GDLibrary
 
         public void Add(string menuSceneID, UIObject actor)
         {
-            if(this.menuDictionary.ContainsKey(menuSceneID))
+            if (this.menuDictionary.ContainsKey(menuSceneID))
             {
                 this.menuDictionary[menuSceneID].Add(actor);
             }
@@ -96,10 +96,10 @@ namespace GDLibrary
             }
 
             //if the user forgets to set the active list then set to the sceneID of the last added item
-            if(this.activeList == null)
+            if (this.activeList == null)
             {
                 SetActiveList(menuSceneID);
-                   
+
             }
         }
 
@@ -175,6 +175,12 @@ namespace GDLibrary
                             oldUIObjectMouseOver.MouseOverState.Update(false);
                         }
 
+                        //audio
+                        if (currentUIObject.MouseOverState.IsActivating())
+                        {
+                            HandleMouseEntered(currentUIObject);
+                        }
+
                         //update the current state of the currently mouse-over'ed ui object
                         currentUIObject.MouseOverState.Update(true);
 
@@ -219,5 +225,10 @@ namespace GDLibrary
             //developer implements in subclass of MenuManager - see MyMenuManager.cs
         }
 
+        //audio
+        protected virtual void HandleMouseEntered(UIObject clickedUIObject)
+        {
+            //developer implements in subclass of MenuManager - see MyMenuManager.cs
+        }
     }
 }

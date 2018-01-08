@@ -76,16 +76,16 @@ namespace GDLibrary
 
         //removes necessity to specify starting screen type layout (e.g. single, multi)
         public ScreenManager(Game game, GraphicsDeviceManager graphics, Integer2 screenResolution,
-          ObjectManager objectManager, CameraManager cameraManager, KeyboardManager keyboardManager, 
+          ObjectManager objectManager, CameraManager cameraManager, KeyboardManager keyboardManager,
           Keys pauseKey, EventDispatcher eventDispatcher, StatusType statusType)
           : this(game, graphics, screenResolution, ScreenUtility.ScreenType.SingleScreen, objectManager, cameraManager,
           keyboardManager, pauseKey, eventDispatcher, statusType)
         {
-          
+
         }
 
-        public ScreenManager(Game game, GraphicsDeviceManager graphics, Integer2 screenResolution, 
-            ScreenUtility.ScreenType screenType, ObjectManager objectManager, CameraManager cameraManager, KeyboardManager keyboardManager, 
+        public ScreenManager(Game game, GraphicsDeviceManager graphics, Integer2 screenResolution,
+            ScreenUtility.ScreenType screenType, ObjectManager objectManager, CameraManager cameraManager, KeyboardManager keyboardManager,
             Keys pauseKey, EventDispatcher eventDispatcher, StatusType statusType)
             : base(game, eventDispatcher, statusType)
         {
@@ -130,12 +130,16 @@ namespace GDLibrary
             {
                 //turn on update and draw i.e. hide the menu
                 this.StatusType = StatusType.Update | StatusType.Drawn;
+
+                //Unmute Sound Effects
             }
             //did the event come from the main menu and is it a start game event
             else if (eventData.EventType == EventActionType.OnPause)
             {
                 //turn off update and draw i.e. show the menu since the game is paused
                 this.StatusType = StatusType.Off;
+
+                //Mute Sound Effects
             }
         }
         #endregion
@@ -151,7 +155,7 @@ namespace GDLibrary
         }
 
         protected override void ApplyUpdate(GameTime gameTime)
-        {          
+        {
             #region Update Views
             //if one camera needs to be drawn on top of another then we need to do a depth sort each time we change the layout
             if (this.bLayoutDirty && this.screenType == ScreenUtility.ScreenType.MultiPictureInPicture)

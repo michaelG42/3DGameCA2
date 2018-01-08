@@ -225,15 +225,15 @@ Wave Bank
     Windows Bank Path Edited = 0;
     Seek Tables = 1;
     Compression Preset Name = <none>;
-    Bank Last Revised Low = 4153655806;
-    Bank Last Revised High = 30640318;
+    Bank Last Revised Low = 1407890670;
+    Bank Last Revised High = 30640320;
 
     Wave
     {
         Name = ButtonHover;
         File = ButtonHover.wav;
-        Build Settings Last Modified Low = 3919053051;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345589451;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -255,8 +255,8 @@ Wave Bank
     {
         Name = CountDownBeep;
         File = CountDownBeep.wav;
-        Build Settings Last Modified Low = 3919053051;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345599452;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -278,8 +278,8 @@ Wave Bank
     {
         Name = FinalBeep;
         File = FinalBeep.wav;
-        Build Settings Last Modified Low = 3919063046;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345599452;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -301,8 +301,8 @@ Wave Bank
     {
         Name = Lava;
         File = Lava.wav;
-        Build Settings Last Modified Low = 3919073048;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345609451;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -324,8 +324,8 @@ Wave Bank
     {
         Name = Music;
         File = Music.wav;
-        Build Settings Last Modified Low = 3919073048;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345619449;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -347,8 +347,8 @@ Wave Bank
     {
         Name = Bang;
         File = Bang.wav;
-        Build Settings Last Modified Low = 3919083046;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345629457;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -370,8 +370,8 @@ Wave Bank
     {
         Name = burning;
         File = burning.wav;
-        Build Settings Last Modified Low = 3919093048;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345629457;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -393,8 +393,8 @@ Wave Bank
     {
         Name = ButtonClick;
         File = ButtonClick.wav;
-        Build Settings Last Modified Low = 3919093048;
-        Build Settings Last Modified High = 30640318;
+        Build Settings Last Modified Low = 1345639479;
+        Build Settings Last Modified High = 30640320;
 
         Cache
         {
@@ -470,53 +470,6 @@ Sound Bank
 
     Sound
     {
-        Name = burning;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = WaveBank1;
-                    Bank Index = 0;
-                    Entry Name = burning;
-                    Entry Index = 6;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
         Name = Bang;
         Volume = -1200;
         Pitch = 0;
@@ -555,6 +508,53 @@ Sound Bank
                     Bank Index = 0;
                     Entry Name = Bang;
                     Entry Index = 5;
+                    Weight = 255;
+                    Weight Min = 0;
+                }
+            }
+        }
+    }
+
+    Sound
+    {
+        Name = burning;
+        Volume = -1200;
+        Pitch = 0;
+        Priority = 0;
+
+        Category Entry
+        {
+            Name = Default;
+        }
+
+        Track
+        {
+            Volume = 0;
+            Use Filter = 0;
+
+            Play Wave Event
+            {
+                Break Loop = 0;
+                Use Speaker Position = 0;
+                Use Center Speaker = 1;
+                New Speaker Position On Loop = 1;
+                Speaker Position Angle = 0.000000;
+                Speaker Position Arc = 0.000000;
+
+                Event Header
+                {
+                    Timestamp = 0;
+                    Relative = 0;
+                    Random Recurrence = 0;
+                    Random Offset = 0;
+                }
+
+                Wave Entry
+                {
+                    Bank Name = WaveBank1;
+                    Bank Index = 0;
+                    Entry Name = burning;
+                    Entry Index = 6;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -821,26 +821,6 @@ Sound Bank
 
     Cue
     {
-        Name = burning;
-
-        Variation
-        {
-            Variation Type = 3;
-            Variation Table Type = 1;
-            New Variation on Loop = 0;
-        }
-
-        Sound Entry
-        {
-            Name = burning;
-            Index = 1;
-            Weight Min = 0;
-            Weight Max = 255;
-        }
-    }
-
-    Cue
-    {
         Name = Bang;
 
         Variation
@@ -853,6 +833,26 @@ Sound Bank
         Sound Entry
         {
             Name = Bang;
+            Index = 1;
+            Weight Min = 0;
+            Weight Max = 255;
+        }
+    }
+
+    Cue
+    {
+        Name = burning;
+
+        Variation
+        {
+            Variation Type = 3;
+            Variation Table Type = 1;
+            New Variation on Loop = 0;
+        }
+
+        Sound Entry
+        {
+            Name = burning;
             Index = 2;
             Weight Min = 0;
             Weight Max = 255;
