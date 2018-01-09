@@ -39,7 +39,7 @@ namespace GDLibrary
             //did the event come from the main menu and is it a start game event
             if (eventData.EventType == EventActionType.OnStart)
             {
-                EventDispatcher.Publish(new EventData(EventActionType.OnNonePicked, EventCategoryType.ObjectPicking));
+
                 //turn on update and draw i.e. hide the menu
                 this.StatusType = StatusType.Update | StatusType.Drawn;
             }
@@ -49,16 +49,9 @@ namespace GDLibrary
                 
                 //turn off update and draw i.e. show the menu since the game is paused
                 this.StatusType = StatusType.Off;
-                EventDispatcher.Publish(new EventData(EventActionType.OnObjectPicked, EventCategoryType.ObjectPicking));
+
             }
 
-            foreach (Actor2D actor in this.drawList)
-            {
-                if (actor.ID == "picking mouseObject")
-                {
-                    this.StatusType = StatusType.Update | StatusType.Drawn;
-                }
-            }
         }
 
         public void Add(Actor2D actor)

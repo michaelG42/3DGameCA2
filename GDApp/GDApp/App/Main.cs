@@ -279,7 +279,7 @@ namespace GDApp
             this.textureDictionary.Load("Assets/Textures/UI/Menu/Backgrounds/mainmenu");
             this.textureDictionary.Load("Assets/Textures/UI/Menu/Backgrounds/audiomenu");
             this.textureDictionary.Load("Assets/Textures/UI/Menu/Backgrounds/controlsmenu");
-            this.textureDictionary.Load("Assets/Textures/UI/Menu/Backgrounds/exitmenuwithtrans");
+
 
             //ui (or hud) elements
             this.textureDictionary.Load("Assets/Textures/UI/HUD/reticuleDefault");
@@ -1065,7 +1065,7 @@ namespace GDApp
             Vector2 position = Vector2.Zero;
             UIButtonObject uiButtonObject = null, clone = null;
             string sceneID = "", buttonID = "", buttonText = "";
-            int verticalBtnSeparation = 50;
+            int verticalBtnSeparation = 100;
 
             #region Main Menu
             sceneID = "main menu";
@@ -1089,13 +1089,13 @@ namespace GDApp
             position = new Vector2(graphics.PreferredBackBufferWidth / 2.0f, 200);
             texture = this.textureDictionary["genericbtn"];
             transform = new Transform2D(position,
-                0, new Vector2(1.8f, 0.6f),
+                0, new Vector2(0.5f, 0.5f),
                 new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), new Integer2(texture.Width, texture.Height));
 
             uiButtonObject = new UIButtonObject(buttonID, ActorType.UIButton, StatusType.Update | StatusType.Drawn,
-                transform, Color.LightPink, SpriteEffects.None, 0.1f, texture, buttonText,
+                transform, Color.FloralWhite, SpriteEffects.None, 0.1f, texture, buttonText,
                 this.fontDictionary["menu"],
-                Color.DarkGray, new Vector2(0, 2));
+                Color.Black, new Vector2(0, 2));
 
             uiButtonObject.AttachController(new UIScaleSineLerpController("sineScaleLerpController2", ControllerType.SineScaleLerp,
               new TrigonometricParameters(0.1f, 0.2f, 1)));
@@ -1109,7 +1109,7 @@ namespace GDApp
             //move down on Y-axis for next button
             clone.Transform.Translation += new Vector2(0, verticalBtnSeparation);
             //change the texture blend color
-            clone.Color = Color.LightGreen;
+            clone.Color = Color.WhiteSmoke;
             this.menuManager.Add(sceneID, clone);
 
             //add controls button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1119,7 +1119,7 @@ namespace GDApp
             //move down on Y-axis for next button
             clone.Transform.Translation += new Vector2(0, 2 * verticalBtnSeparation);
             //change the texture blend color
-            clone.Color = Color.LightBlue;
+            clone.Color = Color.White;
             this.menuManager.Add(sceneID, clone);
 
             //add exit button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1129,7 +1129,7 @@ namespace GDApp
             //move down on Y-axis for next button
             clone.Transform.Translation += new Vector2(0, 3 * verticalBtnSeparation);
             //change the texture blend color
-            clone.Color = Color.LightYellow;
+            clone.Color = Color.GhostWhite;
             //store the original color since if we modify with a controller and need to reset
             clone.OriginalColor = clone.Color;
             //attach another controller on the exit button just to illustrate multi-controller approach
