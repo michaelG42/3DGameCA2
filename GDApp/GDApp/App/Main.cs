@@ -408,7 +408,7 @@ namespace GDApp
             this.level2Initalized = false;
 
             //Initial timer is Countdown of 5 seconds + the introCamera time
-            this.InitialTimerTime = 24;
+            
             InitializeNonCollidableGround(worldScale);
             InitializeNonCollidableSkyBox(worldScale);
            // InitializeCollidableDecorators();
@@ -1079,7 +1079,7 @@ namespace GDApp
 
             this.menuManager.Add(sceneID, new UITextureObject("mainmenuTexture", ActorType.UIStaticTexture,
                 StatusType.Drawn, //notice we dont need to update a static texture
-                transform, Color.White, SpriteEffects.None,
+                transform, Color.GhostWhite, SpriteEffects.None,
                 1, //depth is 1 so its always sorted to the back of other menu elements
                 texture));
 
@@ -1093,7 +1093,7 @@ namespace GDApp
                 new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), new Integer2(texture.Width, texture.Height));
 
             uiButtonObject = new UIButtonObject(buttonID, ActorType.UIButton, StatusType.Update | StatusType.Drawn,
-                transform, Color.FloralWhite, SpriteEffects.None, 0.1f, texture, buttonText,
+                transform, Color.GhostWhite, SpriteEffects.None, 0.1f, texture, buttonText,
                 this.fontDictionary["menu"],
                 Color.Black, new Vector2(0, 2));
 
@@ -1101,6 +1101,8 @@ namespace GDApp
               new TrigonometricParameters(0.1f, 0.2f, 1)));
             this.menuManager.Add(sceneID, uiButtonObject);
 
+            uiButtonObject.AttachController(new UIColorSineLerpController("colorSineLerpController", ControllerType.SineColorLerp,
+        new TrigonometricParameters(1, 0.4f, 0), Color.LightSeaGreen, Color.LightGreen));
 
             //add audio button - clone the audio button then just reset texture, ids etc in all the clones
             clone = (UIButtonObject)uiButtonObject.Clone();
@@ -1109,7 +1111,7 @@ namespace GDApp
             //move down on Y-axis for next button
             clone.Transform.Translation += new Vector2(0, verticalBtnSeparation);
             //change the texture blend color
-            clone.Color = Color.WhiteSmoke;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
 
             //add controls button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1119,7 +1121,7 @@ namespace GDApp
             //move down on Y-axis for next button
             clone.Transform.Translation += new Vector2(0, 2 * verticalBtnSeparation);
             //change the texture blend color
-            clone.Color = Color.White;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
 
             //add exit button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1134,7 +1136,7 @@ namespace GDApp
             clone.OriginalColor = clone.Color;
             //attach another controller on the exit button just to illustrate multi-controller approach
             clone.AttachController(new UIColorSineLerpController("colorSineLerpController", ControllerType.SineColorLerp,
-                    new TrigonometricParameters(1, 0.4f, 0), Color.LightSeaGreen, Color.LightGreen));
+                    new TrigonometricParameters(1, 0.4f, 0), new Color(255, 156, 0), new Color(200, 50, 50)));//Colors are orange and red
             this.menuManager.Add(sceneID, clone);
             #endregion
 
@@ -1159,7 +1161,7 @@ namespace GDApp
             clone.ID = "volumeUpbtn";
             clone.Text = "Volume Up";
             //change the texture blend color
-            clone.Color = Color.LightPink;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
 
             //add volume down button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1169,7 +1171,7 @@ namespace GDApp
             clone.ID = "volumeDownbtn";
             clone.Text = "Volume Down";
             //change the texture blend color
-            clone.Color = Color.LightGreen;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
 
             //add volume mute button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1179,7 +1181,7 @@ namespace GDApp
             clone.ID = "volumeMutebtn";
             clone.Text = "Volume Mute";
             //change the texture blend color
-            clone.Color = Color.LightBlue;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
 
             //add volume mute button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1189,7 +1191,7 @@ namespace GDApp
             clone.ID = "volumeUnMutebtn";
             clone.Text = "Volume Un-mute";
             //change the texture blend color
-            clone.Color = Color.LightSalmon;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
 
             //add back button - clone the audio button then just reset texture, ids etc in all the clones
@@ -1199,7 +1201,7 @@ namespace GDApp
             clone.ID = "backbtn";
             clone.Text = "Back";
             //change the texture blend color
-            clone.Color = Color.LightYellow;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
             #endregion
 
@@ -1221,11 +1223,11 @@ namespace GDApp
             //add back button - clone the audio button then just reset texture, ids etc in all the clones
             clone = (UIButtonObject)uiButtonObject.Clone();
             //move down on Y-axis for next button
-            clone.Transform.Translation += new Vector2(0, 9 * verticalBtnSeparation);
+            clone.Transform.Translation += new Vector2(0, 9 * (verticalBtnSeparation/2));
             clone.ID = "backbtn";
             clone.Text = "Back";
             //change the texture blend color
-            clone.Color = Color.LightYellow;
+            clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
             #endregion
         }
@@ -1338,7 +1340,7 @@ namespace GDApp
             this.GameStateText = new UITextObject("GameText",
                     ActorType.UIDynamicText,
                     StatusType.Drawn | StatusType.Update,
-                    transform, Color.Green,
+                    transform, new Color(200, 200, 200),
                     SpriteEffects.None,
                     1,
                     initalText,
@@ -1377,9 +1379,10 @@ namespace GDApp
             switch(this.gameState)
             {
                 case GameState.NotStarted:
+                    this.InitialTimerTime = 24 + (int)gameTime.TotalGameTime.TotalSeconds;
                     break;
                 case GameState.CountDown:
-
+                    
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 100) / 2, 60);
                     DoCountDown(GameState.Level1, gameTime);
                     break;
@@ -1407,7 +1410,8 @@ namespace GDApp
 
         private void DoCountDown(GameState gamestate, GameTime gameTime)
         {
-           // Console.WriteLine("GameSte" + gamestate);
+
+           Console.WriteLine("Timer" + this.timer.EndTime);
             if (!this.timer.IsComplete)
             {
 

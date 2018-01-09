@@ -345,7 +345,7 @@ namespace GDLibrary
             }
             catch (InvalidOperationException e)
             {
-                System.Diagnostics.Debug.WriteLine("Does category (soundCategoryStr) exist in your Xact file?");
+                System.Diagnostics.Debug.WriteLine("Does category (soundCategoryStr) exist in your Xact file?" + e);
             }
         }
 

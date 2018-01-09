@@ -7,8 +7,8 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GDApp</RootNamespace>
-    <AssemblyName>GDApp</AssemblyName>
+    <RootNamespace>VolcanoEscape</RootNamespace>
+    <AssemblyName>Volcano Escape</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
@@ -16,7 +16,7 @@
     <XnaProfile>HiDef</XnaProfile>
     <XnaCrossPlatformGroupID>f4a1b39c-47c7-462e-811d-9074c69fcd4f</XnaCrossPlatformGroupID>
     <XnaOutputType>Game</XnaOutputType>
-    <ApplicationIcon>Game.ico</ApplicationIcon>
+    <ApplicationIcon>Volcano Escape.ico</ApplicationIcon>
     <Thumbnail>GameThumbnail.png</Thumbnail>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -78,15 +78,17 @@
     <Content Include="GameThumbnail.png">
       <XnaPlatformSpecific>true</XnaPlatformSpecific>
     </Content>
+    <Content Include="Volcano Escape.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\GDLibrary\GDLibrary\GDLibrary.csproj">
+    <ProjectReference Include="..\..\GDLibrary\GDLibrary\Library.csproj">
       <Project>{781A2CF8-83E6-4968-BCEA-CF650AA4758F}</Project>
-      <Name>GDLibrary</Name>
+      <Name>Library</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GDAppContent\GDAppContent.contentproj">
-      <Name>GDAppContent</Name>
+    <ProjectReference Include="..\GDAppContent\Content.contentproj">
+      <Name>Content</Name>
       <XnaReferenceType>Content</XnaReferenceType>
+      <Project>{38795FA4-A0BD-48F8-98E8-15819FA36653}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

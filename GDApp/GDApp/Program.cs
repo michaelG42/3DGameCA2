@@ -12,6 +12,7 @@ namespace GDApp
         {
             using (Main game = new Main())
             {
+
                 game.Run();
             }
         }
