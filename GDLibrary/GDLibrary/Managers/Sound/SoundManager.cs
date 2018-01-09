@@ -22,6 +22,8 @@ namespace GDLibrary
         protected AudioListener audioListener;
         protected List<string> categories;
         private float volume;
+
+        private Dictionary<string, Cue> cueDictionary;
  
         #endregion
 
@@ -54,9 +56,23 @@ namespace GDLibrary
             this.cueList3D = new List<Cue3D>();
             this.playSet3D = new HashSet<string>();
             this.audioListener = new AudioListener();
+            InitializeCueDictionary();
         }
 
+        private void InitializeCueDictionary()
+        {
+            this.cueDictionary = new Dictionary<string, Cue>();
 
+            this.cueDictionary.Add("Bang", this.soundBank.GetCue("Bang"));
+            this.cueDictionary.Add("burning", this.soundBank.GetCue("burning"));
+            this.cueDictionary.Add("ButtonClick", this.soundBank.GetCue("ButtonClick"));
+            this.cueDictionary.Add("ButtonHover", this.soundBank.GetCue("ButtonHover"));
+            this.cueDictionary.Add("CountDownBeep", this.soundBank.GetCue("CountDownBeep"));
+            this.cueDictionary.Add("FinalBeep", this.soundBank.GetCue("FinalBeep"));
+            this.cueDictionary.Add("Lava", this.soundBank.GetCue("Lava"));
+            this.cueDictionary.Add("Music", this.soundBank.GetCue("Music"));
+
+        }
         #region Event Handling
         protected override void RegisterForEventHandling(EventDispatcher eventDispatcher)
         {
@@ -136,7 +152,10 @@ namespace GDLibrary
             string cueName = eventData.AdditionalParameters[0] as string;
 
             if (eventData.EventType == EventActionType.OnPlay)
-                this.PlayCue(cueName);
+            {
+                this.cueDictionary[cueName] = this.soundBank.GetCue(cueName);
+                this.cueDictionary[cueName].Play();
+            }
             else if (eventData.EventType == EventActionType.OnPause)
                 this.PauseCue(cueName);
             else if (eventData.EventType == EventActionType.OnResume)
@@ -191,16 +210,17 @@ namespace GDLibrary
         {
             if (!playSet3D.Contains(cueName)) //if we have not already been asked to play this in the current update loop then play it
             {
-                Cue cue = this.soundBank.GetCue(cueName);
-                cue.Play();
+                //Cue cue = this.soundBank.GetCue(cueName);
+                this.cueDictionary[cueName].Play();
+                this.cueDictionary[cueName] = this.soundBank.GetCue(cueName);
             }
         }
         //pauses a 2D cue
         public void PauseCue(string cueName)
         {
-            Cue cue = this.soundBank.GetCue(cueName);
-            if((cue != null) && (cue.IsPlaying))
-                cue.Pause();
+
+            if((this.cueDictionary.ContainsKey(cueName)) && this.cueDictionary[cueName].IsPlaying)
+                this.cueDictionary[cueName].Pause();
         }
 
         //resumes a paused 2D cue

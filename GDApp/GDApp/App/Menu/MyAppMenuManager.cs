@@ -58,7 +58,6 @@ namespace GDApp
         {
             object[] additionalParameters = { "ButtonClick" };
             EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParameters));
-            System.Console.WriteLine("Somthing");
             //notice that the IDs are the same as the button IDs specified when we created the menu in Main::AddMenuElements()
             switch (clickedUIObject.ID)
             {
@@ -122,8 +121,10 @@ namespace GDApp
         {
             //will be received by the menu manager and screen manager and set the menu to be shown and game to be paused
             EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.MainMenu));
-            if (firstStart)
+            if (this.firstStart)
             {
+                object[] additionalParametersSound = { "Lava" };
+                EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
 
                 object[] additionalEventParamsB = { AppData.IntroCurveCameraID };
                 EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));

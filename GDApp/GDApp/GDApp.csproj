@@ -62,11 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App\Actors\PlatformCollidablePrimitiveObject.cs" />
-    <Compile Include="App\Actors\PlayerCollidablePrimitiveObjectLevel2.cs" />
     <Compile Include="App\Actors\PlayerCollidablePrimitveObject.cs" />
     <Compile Include="App\Factory\MyPrimitiveFactory.cs" />
     <Compile Include="App\Game\MyGameStateManager.cs" />
-    <Compile Include="App\MainOld.cs" />
     <Compile Include="App\Managers\MySimplePickingManager.cs" />
     <Compile Include="App\Managers\Timer.cs" />
     <Compile Include="App\Menu\MyAppMenuManager.cs" />

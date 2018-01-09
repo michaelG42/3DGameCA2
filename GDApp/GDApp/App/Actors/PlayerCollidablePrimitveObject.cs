@@ -23,10 +23,6 @@ namespace GDLibrary
         private bool winZoneEventSent;
         private bool looseZoneEventSent;
 
-        private bool LavaZoneEventSent1;
-        private bool LavaZoneEventSent2;
-        private bool LavaZoneEventSent3;
-        private bool LavaZoneEventSent4;
         private ManagerParameters managerParameters;
 
         private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
@@ -41,7 +37,7 @@ namespace GDLibrary
         private bool inGame;
         private bool collidingWithGround;
 
-
+        private bool moveSoundPlaying;
 
         public PlayerCollidablePrimitiveObject[] Targets { get => targets; set => targets = value; }
         public bool InGame { get => inGame; set => inGame = value; }
@@ -185,7 +181,7 @@ namespace GDLibrary
 
         protected override void HandleCollisionResponse(Actor collidee)
         {
-            if ((collidee is SimpleZoneObject) && (this.ActorType == ActorType.Player))
+            if ((collidee is SimpleZoneObject))
             {
                 if (collidee.ID.Equals(AppData.WinZoneID))
                 {
@@ -206,8 +202,16 @@ namespace GDLibrary
                     if (!looseZoneEventSent) //add a boolean to stop the event being sent multiple times!
                     {
                         //publish some sort of event - maybe an event to switch the camera?
-                        object[] additionalParameters = { GameState.Lost };
-                        EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+                        if((this.ActorType == ActorType.Player))
+                        {
+                            object[] additionalParameters = { GameState.Lost };
+                            EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+                        }
+
+
+                        object[] additionalParametersSound = { "burning" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
+
                         looseZoneEventSent = true;
                     }
 
@@ -242,6 +246,10 @@ namespace GDLibrary
                 }
                 else if (collidee.ActorType == ActorType.CollidableEnemy || collidee.ActorType == ActorType.Player)
                 {
+
+                    object[] additionalParametersSound = { "Bang" };
+                    EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
+
                     //there was a Problem where if a player wasnt moving it wouldnt detect collsion
                     //Solved by setting the other players collisionVelocity, rather than this.collisionVelocity
                     (collidee as CollidablePrimitiveObject).CollisionVector = CalculateCollisionVector((collidee as CollidablePrimitiveObject).Velocity);
@@ -280,10 +288,10 @@ namespace GDLibrary
         {
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
-            if(this.ActorType == ActorType.CollidableEnemy)
-            {
-                this.accelerationVector = -this.accelerationVector;
-            }
+            //if (this.ActorType == ActorType.CollidableEnemy)
+            //{
+            //    this.accelerationVector = -this.accelerationVector;
+            //}
             this.Velocity = CalculateVelocity() + this.accelerationVector;
             if(this.GameState == GameState.Level2)
             {
@@ -298,8 +306,29 @@ namespace GDLibrary
                 this.Transform.TranslateIncrement = (this.Velocity);
             else
                 this.Transform.TranslateBy(this.Velocity);
+
+           
         }
 
+        protected void HandleMoveSound()
+        {
+
+
+            if ((this.Velocity.X <= 0.1f && this.Velocity.Z <= 0.1f || !this.inGame) && this.ActorType == ActorType.Player)
+            {
+                Console.WriteLine("PAusing");
+                object[] additionalParametersSound = { "BallRoll" };
+                EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.Sound2D, additionalParametersSound));
+                this.moveSoundPlaying = false;
+            }
+            if ((!this.moveSoundPlaying && this.Velocity.X <= 0.1f && this.Velocity.Z <= 0.1f) && this.ActorType == ActorType.Player)
+            {
+                object[] additionalParametersSound = { "BallRoll" };
+                EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
+                this.moveSoundPlaying = true;
+            }
+
+        }
         protected float ApplyGravity()
         {
             //Gravity

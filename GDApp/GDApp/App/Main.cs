@@ -91,6 +91,7 @@ namespace GDApp
         private bool thirdPersonEventSent;
         private bool introCameraSkipped;
         private bool lavaTimerSet;
+
         #endregion
 
         #region Properties
@@ -1367,6 +1368,7 @@ namespace GDApp
                 RaiseLava(gameTime);
 
             }
+            
         }
         private void UpdateGameText(GameTime gameTime)
         {
@@ -1377,13 +1379,13 @@ namespace GDApp
                     break;
                 case GameState.CountDown:
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 100) / 2, 60);
-                    CountDownLevel1(gameTime);
+                    DoCountDown(GameState.Level1, gameTime);
                     break;
                 case GameState.Level1:
                     this.GameStateText.Text = "";
                     break;
                 case GameState.Level2Intro:
-                    CountDownLevel2(gameTime);
+                    DoCountDown(GameState.Level2, gameTime);
                     break;
                 case GameState.Level2:
                     this.GameStateText.Text = "";
@@ -1400,86 +1402,78 @@ namespace GDApp
 
         }
 
-        private void CountDownLevel1(GameTime gameTime)
+
+        private void DoCountDown(GameState gamestate, GameTime gameTime)
         {
-
-            
-            if(!this.timer.IsComplete)
-            {
-                
-                this.timer.set(gameTime, InitialTimerTime);
-
-                if (this.timer.EndTime == 0)
-                {
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 160) / 2, 60);
-                    this.GameStateText.Text = "GO!";
-                }
-                else if (this.timer.EndTime > 0)
-                {
-                    this.timer.finish();
-                    this.timer.reset();
-                    object[] additionalParameters = { GameState.Level1 };
-                    EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
-                }
-                else if(this.timer.EndTime >= -5)
-                {
-                    this.GameStateText.Text = this.timer.Display;
-                }
-            }
-
-        }
-
-        private void CountDownLevel2(GameTime gameTime)
-        {
-
+            Console.WriteLine("GameSte" + gamestate);
             if (!this.timer.IsComplete)
             {
-                this.timer.set(gameTime, InitialTimerTime + 15);
 
-                if (this.timer.EndTime == 0)
-                {
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 160) / 2, 60);
-                    this.GameStateText.Text = "GO!";
-                }
-                else if (this.timer.EndTime > 0)
+                int previousTimerTime = this.timer.EndTime;
+                this.timer.set(gameTime, InitialTimerTime);
+                int timerTime = this.timer.EndTime;
+                if (timerTime > 0)
                 {
                     this.timer.finish();
                     this.timer.reset();
-                    if(!this.lavaTimerSet)
+                    object[] additionalParameters = { gamestate };
+                    EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+
+                    if (gamestate == GameState.Level2)
                     {
-                        this.lavaTimer = gameTime.TotalGameTime.Seconds + 180;
-                        this.lavaTimerSet = true;
+                        if (!this.lavaTimerSet)
+                        {
+                            this.lavaTimer = gameTime.TotalGameTime.Seconds + 180;
+                            this.lavaTimerSet = true;
+                        }
+                    }
+                }
+                else if (timerTime == 0)
+                {
+                    if (previousTimerTime != this.timer.EndTime)
+                    {
+                        object[] additionalParametersSound = { "FinalBeep" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
                     }
 
-                    object[] additionalParameters = { GameState.Level2 };
-                    EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 160) / 2, 60);
+                    this.GameStateText.Text = "GO!";
                 }
-                else if (this.timer.EndTime >= -5)
+                else if (timerTime >= -5)
                 {
                     this.GameStateText.Text = this.timer.Display;
-                    if(!this.thirdPersonEventSent)
+                    this.introCameraSkipped = true;
+                    if (previousTimerTime != this.timer.EndTime)
                     {
-                        object[] additionalEventParamsB = { AppData.ThirdPersonCameraID };
-                        EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
-                        this.thirdPersonEventSent = true;
+                        object[] additionalParametersSound = { "CountDownBeep" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
+                    }
+
+                    if (gamestate == GameState.Level2)
+                    {
+                        if (!this.thirdPersonEventSent)
+                        {
+                            object[] additionalEventParamsB = { AppData.ThirdPersonCameraID };
+                            EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+                            this.thirdPersonEventSent = true;
+                        }
                     }
 
                 }
-                else if (this.timer.EndTime >= -10)
+                else if (this.timer.EndTime >= -10 && gamestate == GameState.Level2)
                 {
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15 * 64)) / 2, 60);
                     this.GameStateText.Text = "ESCAPE THE VOLCANO!";
                 }
-                else if (this.timer.EndTime >= -15)
+                else if (this.timer.EndTime >= -15 && gamestate == GameState.Level2)
                 {
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15 * 64)) / 2, 60);
                     this.GameStateText.Text = "Level 2";
                 }
             }
-
         }
 
-        private void RaiseLava(GameTime gameTime)
+            private void RaiseLava(GameTime gameTime)
         {
             this.timer.set(gameTime, lavaTimer);
             if (this.timer.EndTime >= -150)
@@ -1556,7 +1550,7 @@ namespace GDApp
             if(count == 3)
             {
                 this.timer.reset();
-                this.InitialTimerTime = gameTime.TotalGameTime.Seconds;
+                this.InitialTimerTime = (gameTime.TotalGameTime.Seconds + 15);
 
                 object[] additionalEventParamsB = { AppData.Level2FixedCameraID };
                 EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
@@ -1638,8 +1632,9 @@ namespace GDApp
 
         protected override void Update(GameTime gameTime)
         {
+            
             //exit using new gamepad manager
-            if(this.gamePadManager != null && this.gamePadManager.IsPlayerConnected(PlayerIndex.One) && this.gamePadManager.IsButtonPressed(PlayerIndex.One, Buttons.Back))
+            if (this.gamePadManager != null && this.gamePadManager.IsPlayerConnected(PlayerIndex.One) && this.gamePadManager.IsButtonPressed(PlayerIndex.One, Buttons.Back))
                 this.Exit();
 
             CheckGameState(gameTime);
@@ -1653,6 +1648,7 @@ namespace GDApp
 
             
             base.Update(gameTime);
+            
         }
 
         private void DoCameraCycle()
@@ -1686,7 +1682,8 @@ namespace GDApp
 
             if (this.keyboardManager.IsFirstKeyPress(Keys.S))
             {
-                if(!this.introCameraSkipped)
+
+                if (!this.introCameraSkipped)
                 {
                     this.InitialTimerTime = this.timer.StartTime + 5;
                     object[] additionalEventParamsB = { AppData.Level1FixedCameraID };
@@ -1695,6 +1692,8 @@ namespace GDApp
                 }
 
             }
+
+
 
         }
 
