@@ -56,6 +56,7 @@ namespace GDLibrary
             this.cueList3D = new List<Cue3D>();
             this.playSet3D = new HashSet<string>();
             this.audioListener = new AudioListener();
+            this.volume = 0.5f;
             InitializeCueDictionary();
         }
 
@@ -84,6 +85,10 @@ namespace GDLibrary
 
         protected virtual void EventDispatcher_GlobalSoundChanged(EventData eventData)
         {
+            Console.WriteLine("Event Recieved");
+            Console.WriteLine(eventData.AdditionalParameters[0].ToString());
+            Console.WriteLine(eventData.AdditionalParameters[1].ToString());
+            Console.WriteLine(eventData.EventType.ToString());
             if (eventData.EventType == EventActionType.OnMute)
             {
                 //any 2D sounds
@@ -109,6 +114,7 @@ namespace GDLibrary
             else if (eventData.EventType == EventActionType.OnVolumeChange)
             {
                 //any 2D sounds
+                
                 float volumeDelta = (float)eventData.AdditionalParameters[0];
                 SoundEffect.MasterVolume = MathHelper.Clamp(SoundEffect.MasterVolume + volumeDelta, 0, 1);
                 //3d sounds

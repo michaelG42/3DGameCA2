@@ -74,31 +74,37 @@ namespace GDApp
                     break;
 
                 case "volumeUpbtn":
-                    { //curly brackets scope additionalParameters to be local to this case
-                        object[] volumeUp = { 0.1f };
-                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeUp, EventCategoryType.GlobalSound, volumeUp));
-                    }
+                        object[] MusicUp = { 0.1f, "Music" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.GlobalSound, MusicUp));
+
+                        object[] SoundsUp = { 0.1f, "Default" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.GlobalSound, SoundsUp));
                     break;
 
                 case "volumeDownbtn":
-                    {
-                        object[] volumeDown = { 0.1f };
-                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeDown, EventCategoryType.GlobalSound, volumeDown));
-                    }
+
+                        object[] MusicDown = { -0.1f, "Music" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.GlobalSound, MusicDown));
+
+
+                        object[] SoundDown = { -0.1f, "Music" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.GlobalSound, SoundDown));
                     break;
 
                 case "volumeMutebtn":
-                    {
                         object[] soundsMute = { 0.0f, "Default" };
                         EventDispatcher.Publish(new EventData(EventActionType.OnMute, EventCategoryType.GlobalSound, soundsMute));
-                    }
+
+                        object[] MusicMute = { 0.0f, "Music" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnMute, EventCategoryType.GlobalSound, MusicMute));
                     break;
 
                 case "volumeUnMutebtn":
-                    {
-                        object[] musicMute = { 0.5f, "Music" };
-                        EventDispatcher.Publish(new EventData(EventActionType.OnUnMute, EventCategoryType.GlobalSound, musicMute));
-                    }
+                        object[] musicUnMute = { 0.5f, "Music" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnUnMute, EventCategoryType.GlobalSound, musicUnMute));
+
+                        object[] soundsUnMute = { 0.5f, "Default" };
+                        EventDispatcher.Publish(new EventData(EventActionType.OnMute, EventCategoryType.GlobalSound, soundsUnMute));
                     break;
 
                 case "backbtn":
