@@ -1047,7 +1047,8 @@ namespace GDApp
         {
             //will be received by the menu manager and screen manager and set the menu to be shown and game to be paused
             EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.MainMenu));
-
+            object[] additionalParametersSound = { "Music" };
+            EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
             //publish an event to set the camera
 
             //we could also just use the line below, but why not use our event dispatcher?
@@ -1405,7 +1406,7 @@ namespace GDApp
 
         private void DoCountDown(GameState gamestate, GameTime gameTime)
         {
-            Console.WriteLine("GameSte" + gamestate);
+           // Console.WriteLine("GameSte" + gamestate);
             if (!this.timer.IsComplete)
             {
 
@@ -1475,30 +1476,24 @@ namespace GDApp
 
             private void RaiseLava(GameTime gameTime)
         {
+            Console.WriteLine("Timer is at " + this.timer.EndTime);
+            Console.WriteLine("Lava Speed is " + this.lavaSpeed);
             this.timer.set(gameTime, lavaTimer);
-            if (this.timer.EndTime >= -150)
-            {
-                this.lavaSpeed = 0.002f;
-            }
-            else if(this.timer.EndTime >= -130)
-            {
-                this.lavaSpeed = 0.004f;
-            }
-            else if (this.timer.EndTime >= -100)
-            {
-                this.lavaSpeed = 0.01f;
-            }
-            else if (this.timer.EndTime >= -60)
+            if (this.timer.EndTime >= -50)
             {
                 this.lavaSpeed = 0.015f;
             }
-            else if (this.timer.EndTime >= -30)
+            else if (this.timer.EndTime >= -100)
             {
-                this.lavaSpeed = 0.02f;
+                this.lavaSpeed = 0.012f;
             }
-            else if (this.timer.EndTime >= 0)
+            else if (this.timer.EndTime >= -130)
             {
-                this.lavaSpeed = 0.04f;
+                this.lavaSpeed = 0.008f;
+            }
+            else if (this.timer.EndTime >= -150)
+            {
+                this.lavaSpeed = 0.003f;
             }
 
             this.lava.Transform.TranslateBy(new Vector3(0, this.lavaSpeed, 0));

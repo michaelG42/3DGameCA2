@@ -288,10 +288,10 @@ namespace GDLibrary
         {
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
-            //if (this.ActorType == ActorType.CollidableEnemy)
-            //{
-            //    this.accelerationVector = -this.accelerationVector;
-            //}
+            if (this.ActorType == ActorType.CollidableEnemy)
+            {
+                this.accelerationVector = -this.accelerationVector;
+            }
             this.Velocity = CalculateVelocity() + this.accelerationVector;
             if(this.GameState == GameState.Level2)
             {

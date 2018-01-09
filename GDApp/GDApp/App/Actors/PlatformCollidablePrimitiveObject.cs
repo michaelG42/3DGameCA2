@@ -33,6 +33,9 @@ namespace GDApp.App.Actors
 
             this.Velocity = CalculateVelocity();
 
+            this.Collidee = CheckCollisions(gameTime);
+            HandleCollisionResponse(this.Collidee);
+
             base.Update(gameTime);
 
             this.previousPosition = this.currentPosition;
@@ -40,7 +43,22 @@ namespace GDApp.App.Actors
             //Console.WriteLine("Velocity is " + this.Velocity);
         }
 
-        protected Vector3 CalculateVelocity()
+        protected override void HandleCollisionResponse(Actor collidee)
+        {
+            if ((collidee is SimpleZoneObject))
+            {
+
+                if (collidee.ID.Equals(AppData.LooseZoneID))
+                {
+
+                    this.ObjectManager.Remove(this);
+                    //setting this to null means that the ApplyInput() method will get called and the player can move through the zone.
+                    this.Collidee = null;
+                }
+
+            }
+        }
+            protected Vector3 CalculateVelocity()
         {
             return (this.currentPosition - this.previousPosition);
         }

@@ -273,15 +273,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Audio\burning.wav">
-      <Name>burning</Name>
+    <Compile Include="Assets\Audio\BallRoll.wav">
+      <Name>BallRoll</Name>
       <Importer>WavImporter</Importer>
       <Processor>SoundEffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Audio\BallRoll.wav">
-      <Name>BallRoll</Name>
+    <Compile Include="Assets\Audio\burning.wav">
+      <Name>burning</Name>
       <Importer>WavImporter</Importer>
       <Processor>SoundEffectProcessor</Processor>
     </Compile>
