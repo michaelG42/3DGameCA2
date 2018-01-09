@@ -111,13 +111,13 @@ namespace GDApp
             //moved instanciation here to allow menu and ui managers to be moved to InitializeManagers()
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            bool isMouseVisible = true;
+            bool isMouseVisible = false;
             Integer2 screenResolution = ScreenUtility.HD720;
             ScreenUtility.ScreenType screenType = ScreenUtility.ScreenType.SingleScreen;
             int numberOfGamePadPlayers = 1;
 
             //set the title
-            Window.Title = "SUMO";
+            Window.Title = "VOLCANO ESCAPE!";
 
             //EventDispatcher
             InitializeEventDispatcher();
@@ -1045,6 +1045,7 @@ namespace GDApp
 
         private void StartGame()
         {
+            EventDispatcher.Publish(new EventData(EventActionType.OnNonePicked, EventCategoryType.ObjectPicking));
             //will be received by the menu manager and screen manager and set the menu to be shown and game to be paused
             EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.MainMenu));
             object[] additionalParametersSound = { "Music" };
@@ -1313,7 +1314,7 @@ namespace GDApp
 
         private void InitializeGameStateText()
         {
-            string initalText = "GET READY!";
+            string initalText = "";
             Transform2D transform = null;
 
             this.GameStateText = null;
@@ -1376,9 +1377,9 @@ namespace GDApp
             switch(this.gameState)
             {
                 case GameState.NotStarted:
-                    this.GameStateText.Text = "GET READY!";
                     break;
                 case GameState.CountDown:
+
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 100) / 2, 60);
                     DoCountDown(GameState.Level1, gameTime);
                     break;
@@ -1470,6 +1471,10 @@ namespace GDApp
                 {
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15 * 64)) / 2, 60);
                     this.GameStateText.Text = "Level 2";
+                }
+                else
+                {
+                    this.GameStateText.Text = "GET READY!";
                 }
             }
         }
@@ -1677,7 +1682,7 @@ namespace GDApp
 
             if (this.keyboardManager.IsFirstKeyPress(Keys.S))
             {
-
+                
                 if (!this.introCameraSkipped)
                 {
                     this.InitialTimerTime = this.timer.StartTime + 5;

@@ -51,21 +51,16 @@ namespace GDApp
 
         private void EventDispatcher_ObjectPickChanged(EventData eventData)
         {
-            if(eventData.EventType == EventActionType.OnObjectPicked)
-            {    
-                SetAppearance();
-
-                Actor3D collidee = eventData.AdditionalParameters[0] as Actor3D;
-                float distanceToObject = (float) eventData.AdditionalParameters[1];
-                this.Text = collidee.ID + "[" + distanceToObject + "]";
+            if (eventData.EventType == EventActionType.OnObjectPicked)
+            {
+                this.StatusType = StatusType.Update | StatusType.Drawn;
 
             }
             else if (eventData.EventType == EventActionType.OnNonePicked)
             {
-                ResetAppearance();
-
-                this.Text = eventData.AdditionalParameters[0] as string;
+                this.StatusType = StatusType.Off;
             }
+  
         }
         #endregion
 
