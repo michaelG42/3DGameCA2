@@ -298,10 +298,10 @@ namespace GDLibrary
         {
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
-            if (this.ActorType == ActorType.CollidableEnemy)
-            {
-                this.accelerationVector = -this.accelerationVector;
-            }
+            //if (this.ActorType == ActorType.CollidableEnemy)
+            //{
+            //    this.accelerationVector = -this.accelerationVector;
+            //}
             this.Velocity = CalculateVelocity() + this.accelerationVector;
             if (this.GameState == GameState.Level2)
             {
@@ -319,7 +319,14 @@ namespace GDLibrary
             else
                 this.Transform.TranslateBy(this.Velocity);
 
-           
+            rotate();
+        }
+
+        protected void rotate()
+        {
+            float ZRot = this.Velocity.X * 15;
+            float XRot = this.Velocity.Z * 15;
+            this.Transform.Rotation += new Vector3(XRot, 0, -ZRot);
         }
 
         protected void HandleMoveSound()

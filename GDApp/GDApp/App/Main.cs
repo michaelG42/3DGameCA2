@@ -667,17 +667,17 @@ namespace GDApp
 
             #region Red Enemy
             transform = new Transform3D(new Vector3(position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
-            InitializeCollidableEnemy(arenaScale, 0, transform, this.textureDictionary["Red"]);
+            InitializeCollidableEnemy(arenaScale, 0, transform, this.textureDictionary["Red"],Color.Red);
             #endregion
 
             #region Blue Enemy
             transform = new Transform3D(new Vector3(-position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
-            InitializeCollidableEnemy(arenaScale, 1, transform, this.textureDictionary["Blue"]);
+            InitializeCollidableEnemy(arenaScale, 1, transform, this.textureDictionary["Blue"], Color.Blue);
             #endregion
 
             #region Yellow Enemy
             transform = new Transform3D(new Vector3(0, Scale / 2 + 2, -position), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
-            InitializeCollidableEnemy(arenaScale, 2, transform, this.textureDictionary["Yellow"]);
+            InitializeCollidableEnemy(arenaScale, 2, transform, this.textureDictionary["Yellow"],Color.Yellow);
             #endregion
 
             updateTargets();
@@ -796,7 +796,7 @@ namespace GDApp
                 this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed, this.eventDispatcher);
             this.playerCollidablePrimitiveObject.ActorType = ActorType.Player;
             this.playerCollidablePrimitiveObject.Transform = transform;
-           // this.playerCollidablePrimitiveObject.EffectParameters.DiffuseColor = Color.ForestGreen;
+            this.playerCollidablePrimitiveObject.EffectParameters.DiffuseColor = Color.ForestGreen;
             this.playerCollidablePrimitiveObject.EffectParameters.Texture = this.textureDictionary["Green"]; ;
             //do we want a texture?
             // playerCollidablePrimitiveObject.EffectParameters.Texture = this.textureDictionary["ml"];
@@ -808,7 +808,7 @@ namespace GDApp
             this.objectManager.Add(playerCollidablePrimitiveObject);
         }
 
-        private void InitializeCollidableEnemy(int arenaScale, int index, Transform3D transform, Texture2D texture)
+        private void InitializeCollidableEnemy(int arenaScale, int index, Transform3D transform, Texture2D texture, Color color)
         {
 
             // float position = arenaScale - (arenaScale / 4);
@@ -830,6 +830,7 @@ namespace GDApp
                 this.managerParameters, AppData.PlayerOneMoveKeys, AppData.PlayerMoveSpeed, this.eventDispatcher);
             this.enemys[index].ActorType = ActorType.CollidableEnemy;
             this.enemys[index].Transform = transform;
+            this.enemys[index].EffectParameters.DiffuseColor = color;
             this.enemys[index].EffectParameters.Texture = texture;
 
             //add to the object manager
