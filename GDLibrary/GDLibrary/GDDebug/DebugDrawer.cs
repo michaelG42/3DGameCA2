@@ -141,9 +141,10 @@ namespace GDLibrary
                 0, Vector2.Zero, 1, SpriteEffects.None, DefaultLayerDepth);
 
             this.textPosition.Y += this.textHeight;
-            this.spriteBatch.DrawString(this.spriteFont,
-                "Nr. Drawn Obj.:" + this.managerParameters.ObjectManager.DebugDrawCount, this.textPosition, this.textColor,
-                0, Vector2.Zero, 1, SpriteEffects.None, DefaultLayerDepth);
+            //Getting Error IN Build mode So I Commented This Out
+            //this.spriteBatch.DrawString(this.spriteFont,
+            //    "Nr. Drawn Obj.:" + this.managerParameters.ObjectManager.DebugDrawCount, this.textPosition, this.textColor,
+            //    0, Vector2.Zero, 1, SpriteEffects.None, DefaultLayerDepth);
         }
     }
 }
