@@ -32,10 +32,10 @@ namespace GDApp
                     //totalElapsedTimeInMs = 0;
 
                     //or tell a UI mouse something
-                    float distanceToObject = (float)Math.Round(Vector3.Distance(this.ManagerParameters.CameraManager.ActiveCamera.Transform.Translation,
-                                                                                            collidee.Transform.Translation), DefaultDistanceToTargetPrecision);
-                    object[] additionalParametersB = { collidee, distanceToObject };
-                    EventDispatcher.Publish(new EventData(EventActionType.OnObjectPicked, EventCategoryType.ObjectPicking, additionalParametersB));
+                    //float distanceToObject = (float)Math.Round(Vector3.Distance(this.ManagerParameters.CameraManager.ActiveCamera.Transform.Translation,
+                    //                                                                        collidee.Transform.Translation), DefaultDistanceToTargetPrecision);
+                    //object[] additionalParametersB = { collidee, distanceToObject };
+                    //EventDispatcher.Publish(new EventData(EventActionType.OnObjectPicked, EventCategoryType.ObjectPicking, additionalParametersB));
 
                     //or do something directly like make the object rotate
                     //collidee.Transform.RotateAroundYBy(15f);

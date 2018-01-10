@@ -59,7 +59,7 @@ namespace GDApp
         public EventDispatcher eventDispatcher { get; private set; }
 
         //stores loaded game resources
-       // private ContentDictionary<Model> modelDictionary;
+        // private ContentDictionary<Model> modelDictionary;
         private ContentDictionary<Texture2D> textureDictionary;
         private ContentDictionary<SpriteFont> fontDictionary;
 
@@ -80,13 +80,16 @@ namespace GDApp
 
         private PlatformCollidablePrimitiveObject[] platforms;
         private Timer timer;
-        private int InitialTimerTime;
-        private int lavaTimer;
         private UITextObject GameStateText;
+        private UITextObject textClone;
         private GameState gameState;
         private SimpleZoneObject looseZoneObject;
-        private float lavaSpeed;
 
+        private float lavaSpeed;
+        private int InitialTimerTime;
+        private int lavaTimer;
+        private int GameTextSize;
+        private int verticalTextOffset;
 
         private bool level2Initalized;
         private bool opacitySet;
@@ -160,8 +163,8 @@ namespace GDApp
             base.Initialize();
         }
 
-       
-        private void InitializeManagers(Integer2 screenResolution, 
+
+        private void InitializeManagers(Integer2 screenResolution,
             ScreenUtility.ScreenType screenType, bool isMouseVisible, int numberOfGamePadPlayers) //1 - 4
         {
             //add sound manager
@@ -173,7 +176,7 @@ namespace GDApp
 
             //create the object manager - notice that its not a drawablegamecomponent. See ScreeManager::Draw()
             this.objectManager = new ObjectManager(this, this.cameraManager, this.eventDispatcher, 10);
-            
+
             //add keyboard manager
             this.keyboardManager = new KeyboardManager(this);
             Components.Add(this.keyboardManager);
@@ -184,7 +187,7 @@ namespace GDApp
                 AppData.KeyPauseShowMenu, this.eventDispatcher, StatusType.Off);
             this.screenManager.DrawOrder = 0;
             Components.Add(this.screenManager);
-      
+
             //add mouse manager
             this.mouseManager = new MouseManager(this, isMouseVisible);
             Components.Add(this.mouseManager);
@@ -223,13 +226,13 @@ namespace GDApp
 
             //CountDown timer
             this.timer = new Timer(this.eventDispatcher);
-       
+
         }
 
         private void LoadDictionaries()
         {
             //models
-           // this.modelDictionary = new ContentDictionary<Model>("model dictionary", this.Content);
+            // this.modelDictionary = new ContentDictionary<Model>("model dictionary", this.Content);
 
             //textures
             this.textureDictionary = new ContentDictionary<Texture2D>("texture dictionary", this.Content);
@@ -296,7 +299,7 @@ namespace GDApp
             //this.textureDictionary.Load("Assets/GDDebug/Textures/checkerboard_greywhite");
 
             //levels
-           // this.textureDictionary.Load("Assets/Textures/Level/level1");
+            // this.textureDictionary.Load("Assets/Textures/Level/level1");
 
 
 #if DEBUG
@@ -317,7 +320,7 @@ namespace GDApp
             #endregion
 
             #region Video
-           // this.videoDictionary.Load("Assets/Video/sample");
+            // this.videoDictionary.Load("Assets/Video/sample");
             #endregion
         }
         private void LoadCurvesAndRails()
@@ -329,7 +332,7 @@ namespace GDApp
             Transform3DCurve curveA = new Transform3DCurve(CurveLoopType.Linear); //experiment with other CurveLoopTypes
             curveA.Add(new Vector3(-40, 80, 0), new Vector3(1, -2f, 0f), Vector3.UnitY, 0); //start position
             curveA.Add(new Vector3(-100, 15, 0), new Vector3(1, -0.2f, 0f), Vector3.UnitY, 5);
-            curveA.Add(new Vector3(0, 100, -120), new Vector3(0, -0.6f, 0.8f), Vector3.UnitY, 9); 
+            curveA.Add(new Vector3(0, 100, -120), new Vector3(0, -0.6f, 0.8f), Vector3.UnitY, 9);
             curveA.Add(new Vector3(60, 25, 0), new Vector3(-1, -0.4f, 0), Vector3.UnitY, 13);
             curveA.Add(new Vector3(5, 40, 60), new Vector3(-0.1f, -0.6f, -0.7f), Vector3.UnitY, 17);
             curveA.Add(new Vector3(0, 45, 65), new Vector3(0, -0.6f, -0.8f), Vector3.UnitY, 19); //end position
@@ -367,8 +370,8 @@ namespace GDApp
             Integer2 viewPortDimensions = new Integer2(240, 150); //set to 16:10 ratio as with screen dimensions
             int verticalOffset = 20;
             int rightHorizontalOffset = 20;
-            this.viewPortDictionary.Add("PIP viewport", new Viewport((screenResolution.X - viewPortDimensions.X - rightHorizontalOffset), 
-                verticalOffset,  viewPortDimensions.X, viewPortDimensions.Y));
+            this.viewPortDictionary.Add("PIP viewport", new Viewport((screenResolution.X - viewPortDimensions.X - rightHorizontalOffset),
+                verticalOffset, viewPortDimensions.X, viewPortDimensions.Y));
         }
         private void LoadFactories()
         {
@@ -411,13 +414,15 @@ namespace GDApp
             //non-collidable ground
             int worldScale = 300;
             int arenaScale = 30;
-            this.level2Initalized = false;
 
+            this.level2Initalized = false;
+            this.GameTextSize = 54;
+            this.verticalTextOffset = 60;
             //Initial timer is Countdown of 5 seconds + the introCamera time
-            
+
             InitializeNonCollidableGround(worldScale);
             InitializeNonCollidableSkyBox(worldScale);
-           // InitializeCollidableDecorators();
+            // InitializeCollidableDecorators();
             //collidable and drivable player
             InitializeCollidablePlayer(arenaScale);
 
@@ -435,15 +440,15 @@ namespace GDApp
             if (!this.level2Initalized)
             {
                 this.lavaSpeed = 0.001f;
-                this.playerCollidablePrimitiveObject.Transform.TranslateTo(new Vector3(0,5,0));
+                this.playerCollidablePrimitiveObject.Transform.TranslateTo(new Vector3(0, 5, 0));
                 InitializePlatforms();
                 this.level2Initalized = true;
             }
-            if(!opacitySet)
+            if (!opacitySet)
             {
                 OpacifyPlatforms();
             }
-            
+
         }
 
 
@@ -462,7 +467,7 @@ namespace GDApp
                 , ShapeType.NormalCube);
 
             InitializePlatform(2, new Transform3D(new Vector3(95, 8f, -10), Vector3.Zero, new Vector3(20, 2, 120), Vector3.UnitX, Vector3.UnitY)
-                ,null
+                , null
                 , ShapeType.NormalCube);
 
             InitializePlatform(3, new Transform3D(new Vector3(95, 8f, 61), Vector3.Zero, new Vector3(20, 2, 20), Vector3.UnitX, Vector3.UnitY)
@@ -505,23 +510,23 @@ namespace GDApp
             , null
             , ShapeType.NormalCube);
 
-            
+
         }
 
         private void OpacifyPlatforms()
         {
             int count = 0;
 
-                for (int i = 0; i < platforms.Length; i++)
-                {
-                    platforms[i].Alpha += 0.005f;
-                if(platforms[i].Alpha == 1)
+            for (int i = 0; i < platforms.Length; i++)
+            {
+                platforms[i].Alpha += 0.005f;
+                if (platforms[i].Alpha == 1)
                 {
                     count++;
                 }
-                }
+            }
 
-            if(count == platforms.Length)
+            if (count == platforms.Length)
             {
                 this.opacitySet = true;
             }
@@ -580,7 +585,7 @@ namespace GDApp
             //set the texture that all clones will have
             primativeObject.EffectParameters.Texture = this.textureDictionary["ml"];
 
-  
+
 
             BoxCollisionPrimitive collisionPrimitive = new BoxCollisionPrimitive(transform);
 
@@ -598,7 +603,7 @@ namespace GDApp
             {
                 this.platforms[index].AttachController(controller);
             }
-            
+
             #endregion
 
             this.objectManager.Add(this.platforms[index]);
@@ -613,7 +618,7 @@ namespace GDApp
             // to get position on edge of Arena
             float position = arenaScale - (arenaScale / 4);
             // Scale players with Arena
-           float Scale = arenaScale / 5;
+            float Scale = arenaScale / 5;
 
             #region Red Enemy
             transform = new Transform3D(new Vector3(position, Scale / 2 + 2, 0), Vector3.Zero, new Vector3(Scale, Scale, Scale), Vector3.UnitX, Vector3.UnitY);
@@ -726,7 +731,7 @@ namespace GDApp
 
             //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.UnLitColoredPrimitivesEffectID] as BasicEffectParameters;
-          
+
             //get the archetypal primitive object from the factory
             PrimitiveObject primitiveObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.ColoredSphere, effectParameters);
 
@@ -757,7 +762,7 @@ namespace GDApp
         private void InitializeCollidableEnemy(int arenaScale, int index, Transform3D transform, Color color)
         {
 
-           // float position = arenaScale - (arenaScale / 4);
+            // float position = arenaScale - (arenaScale / 4);
             float Scale = arenaScale / 5;
 
             //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
@@ -788,7 +793,7 @@ namespace GDApp
 
         private void InitializeNonCollidableVolcanoBox(int worldScale)
         {
-           // worldScale /= 2;
+            // worldScale /= 2;
             //first we will create a prototype plane and then simply clone it for each of the skybox decorator elements (e.g. ground, front, top etc). 
             Transform3D transform = new Transform3D(new Vector3(0, -5, 0), new Vector3(worldScale, 1, worldScale));
 
@@ -855,14 +860,14 @@ namespace GDApp
         private void InitializeNonCollidableSkyBox(int worldScale)
         {
             InitializeNonCollidableVolcanoBox(worldScale);
-        
-                worldScale *= 2;
+
+            worldScale *= 2;
             //first we will create a prototype plane and then simply clone it for each of the skybox decorator elements (e.g. ground, front, top etc). 
             Transform3D transform = new Transform3D(new Vector3(0, -5, 0), new Vector3(worldScale, 1, worldScale));
 
             //get the effect relevant to this primitive type (i.e. colored, textured, wireframe, lit, unlit)
             BasicEffectParameters effectParameters = this.effectDictionary[AppData.LitTexturedPrimitivesEffectID] as BasicEffectParameters;
-           
+
 
             //get the archetype from the factory
             PrimitiveObject Skybox = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCube, effectParameters);
@@ -872,8 +877,8 @@ namespace GDApp
             //Skybox.EffectParameters.DiffuseColor = Color.White;
             #region Skybox
 
-           //
-           clonePlane = Skybox.Clone() as PrimitiveObject;
+            //
+            clonePlane = Skybox.Clone() as PrimitiveObject;
 
             clonePlane.Transform.Rotation = new Vector3(90, 0, 0);
 
@@ -1001,7 +1006,7 @@ namespace GDApp
 
         private void InitializeIntroCamera(Integer2 screenResolution)
         {
-            
+
             Transform3D transform = null;
             IController controller = null;
             string viewportDictionaryKey = "full viewport";
@@ -1051,7 +1056,7 @@ namespace GDApp
 
         private void StartGame()
         {
-            
+
             EventDispatcher.Publish(new EventData(EventActionType.OnObjectPicked, EventCategoryType.ObjectPicking));
             //will be received by the menu manager and screen manager and set the menu to be shown and game to be paused
             EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.MainMenu));
@@ -1230,7 +1235,7 @@ namespace GDApp
             //add back button - clone the audio button then just reset texture, ids etc in all the clones
             clone = (UIButtonObject)uiButtonObject.Clone();
             //move down on Y-axis for next button
-            clone.Transform.Translation += new Vector2(0, 9 * (verticalBtnSeparation/2));
+            clone.Transform.Translation += new Vector2(0, 9 * (verticalBtnSeparation / 2));
             clone.ID = "backbtn";
             clone.Text = "Back";
             //change the texture blend color
@@ -1282,7 +1287,7 @@ namespace GDApp
 
             #region Player 1 Progress Bar
             position = new Vector2(graphics.PreferredBackBufferWidth / 2.0f - texture.Width * scale.X - separation, verticalOffset);
-            transform = new Transform2D(position, 0, scale, 
+            transform = new Transform2D(position, 0, scale,
                 Vector2.Zero, /*new Vector2(texture.Width/2.0f, texture.Height/2.0f),*/
                 new Integer2(texture.Width, texture.Height));
 
@@ -1308,7 +1313,7 @@ namespace GDApp
             textureObject = new UITextureObject(AppData.PlayerTwoProgressID,
                     ActorType.UITexture,
                     StatusType.Drawn | StatusType.Update,
-                    transform, 
+                    transform,
                     Color.Red,
                     SpriteEffects.None,
                     1,
@@ -1330,14 +1335,12 @@ namespace GDApp
             Vector2 position = Vector2.Zero;
 
             Vector2 scale = Vector2.Zero;
-            float verticalOffset = 60;
+            
 
             scale = Vector2.One;
 
-            #region Player 1 Progress Bar
-
             //to center align horizontaly, it is half window width - lenght of text multiplyed by Scale and fontSize divided by 2
-            position = new Vector2((GraphicsDevice.Viewport.Width - (initalText.Length * 60)) /2, verticalOffset);
+            position = new Vector2((GraphicsDevice.Viewport.Width - (initalText.Length * 60)) / 2, this.verticalTextOffset);
 
             transform = new Transform2D(position, 0, scale,
                 Vector2.Zero, /*new Vector2(texture.Width/2.0f, texture.Height/2.0f),*/
@@ -1347,7 +1350,7 @@ namespace GDApp
             this.GameStateText = new UITextObject("GameText",
                     ActorType.UIDynamicText,
                     StatusType.Drawn | StatusType.Update,
-                    transform, new Color(200, 200, 200),
+                    transform, new Color(200, 200, 200),//Light Grey
                     SpriteEffects.None,
                     1,
                     initalText,
@@ -1355,26 +1358,34 @@ namespace GDApp
 
 
             //textObject.AttachController(new UIProgressController(AppData.PlayerOneProgressControllerID, ControllerType.UIProgress, startValue, 10, this.eventDispatcher));
-            
+
             this.uiManager.Add(this.GameStateText);
 
-            #endregion
+
+            this.textClone = (this.GameStateText.Clone() as UITextObject);
+
+           
+            this.textClone.Transform.Scale = new Vector2(0.5f, 0.5f);
+
+            this.textClone.Color = new Color(40,40,40);//Dark Grey
+
+            this.uiManager.Add(textClone);
 
 
         }
         private void CheckGameState(GameTime gameTime)
         {
-            
+
             UpdateGameText(gameTime);
-            if(this.gameState == GameState.Level1)
+            if (this.gameState == GameState.Level1)
             {
                 checkLevel1Win(gameTime);
             }
-            if(this.gameState == GameState.Level2Intro)
+            if (this.gameState == GameState.Level2Intro)
             {
                 InitializeLevel2();
             }
-            if(this.gameState == GameState.Level2)
+            if (this.gameState == GameState.Level2)
             {
                 RaiseLava(gameTime);
 
@@ -1383,18 +1394,17 @@ namespace GDApp
             //{
             //    this.InitialTimerTime = Math.Abs(this.timer.EndTime) + (int)gameTime.TotalGameTime.TotalSeconds;
             //}
-            
+
         }
         private void UpdateGameText(GameTime gameTime)
         {
-            switch(this.gameState)
+            //Game text is Centered By Multiplying the length of the text By the size, Taking that away from the width then dividing by 2
+            switch (this.gameState)
             {
                 case GameState.NotStarted:
                     this.InitialTimerTime = 24 + (int)gameTime.TotalGameTime.TotalSeconds;
                     break;
                 case GameState.CountDown:
-                    
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 100) / 2, 60);
                     DoCountDown(GameState.Level1, gameTime);
                     break;
                 case GameState.Level1:
@@ -1407,11 +1417,11 @@ namespace GDApp
                     this.GameStateText.Text = "";
                     break;
                 case GameState.Won:
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (7 * 62)) / 2, 60);
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (8 * this.GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "YOU WIN!";
                     break;
                 case GameState.Lost:
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (7 * 62)) / 2, 60);
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (10 * this.GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "Game Over!";
                     break;
             }
@@ -1422,8 +1432,6 @@ namespace GDApp
         private void DoCountDown(GameState gamestate, GameTime gameTime)
         {
 
-           Console.WriteLine("Timer End Time is" + this.timer.EndTime);
-            Console.WriteLine("Timer Pause Time is " + this.timer.PauseTime);
             if (!this.timer.IsComplete)
             {
 
@@ -1445,6 +1453,7 @@ namespace GDApp
                             this.lavaTimerSet = true;
                         }
                     }
+                    DisplayMessage("");
                 }
                 else if (timerTime == 0)
                 {
@@ -1454,12 +1463,14 @@ namespace GDApp
                         EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
                     }
 
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 160) / 2, 60);
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (3* GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "GO!";
 
                 }
                 else if (timerTime >= -5)
                 {
+                    
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (1 * GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = this.timer.Display;
                     this.introCameraSkipped = true;
                     if (previousTimerTime != this.timer.EndTime)
@@ -1480,27 +1491,42 @@ namespace GDApp
 
                             this.thirdPersonEventSent = true;
                         }
+                        this.textClone.Color = this.GameStateText.Color;
+                        DisplayMessage("The Lava is Rising!");
+                    }
+                    else
+                    {
+                        DisplayMessage("");
                     }
 
                 }
                 else if (this.timer.EndTime >= -10 && gamestate == GameState.Level2)
                 {
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15 * 64)) / 2, 60);
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (19 * GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "ESCAPE THE VOLCANO!";
                 }
                 else if (this.timer.EndTime >= -15 && gamestate == GameState.Level2)
                 {
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (15 * 64)) / 2, 60);
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (7 * GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "Level 2";
                 }
                 else
                 {
+                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (10* GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "GET READY!";
+
+                    DisplayMessage("Press Space To Skip");
                 }
             }
         }
 
-            private void RaiseLava(GameTime gameTime)
+        private void DisplayMessage(string text)
+        {
+            this.textClone.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (text.Length * (GameTextSize/2))) / 2, this.verticalTextOffset * 10);
+            this.textClone.Text = text;
+        }
+
+        private void RaiseLava(GameTime gameTime)
         {
             Console.WriteLine("Timer is at " + this.timer.EndTime);
             Console.WriteLine("Lava Speed is " + this.lavaSpeed);
@@ -1531,7 +1557,7 @@ namespace GDApp
         private void InitializeEffects()
         {
             BasicEffect basicEffect = null;
-           
+
             #region For unlit colored primitive objects incl. simple lines and wireframe primitives
             basicEffect = new BasicEffect(graphics.GraphicsDevice);
             basicEffect.TextureEnabled = false;
@@ -1547,7 +1573,7 @@ namespace GDApp
             #endregion
 
             #region For lit (i.e. normals defined) textured primitive objects
-            basicEffect = new BasicEffect(graphics.GraphicsDevice);  
+            basicEffect = new BasicEffect(graphics.GraphicsDevice);
             basicEffect.TextureEnabled = true;
             basicEffect.VertexColorEnabled = false;
             basicEffect.EnableDefaultLighting();
@@ -1563,20 +1589,15 @@ namespace GDApp
             int count = 0;
             for (int i = 0; i < enemys.Length; i++)
             {
-                if(!enemys[i].InGame)
+                if (!enemys[i].InGame)
                 {
                     count++;
                 }
             }
-            if(count == 3)
+            if (count == 3)
             {
                 this.timer.reset();
                 this.timer.PauseTime = 0;
-                Console.WriteLine("_______________________________________________");
-                Console.WriteLine("Timer Reset");
-                Console.WriteLine("Timer End Time is" + this.timer.EndTime);
-                Console.WriteLine("Timer Pause Time is " + this.timer.PauseTime);
-                Console.WriteLine("_______________________________________________");
 
                 this.InitialTimerTime = (int)(gameTime.TotalGameTime.TotalSeconds + 15);
 
@@ -1624,16 +1645,16 @@ namespace GDApp
             //moved to Initialize
             //spriteBatch = new SpriteBatch(GraphicsDevice);
 
-//            #region Add Menu & UI
-//            InitializeMenu();
-//            AddMenuElements();
-//            InitializeUI();
-//            AddUIElements();
-//            #endregion
+            //            #region Add Menu & UI
+            //            InitializeMenu();
+            //            AddMenuElements();
+            //            InitializeUI();
+            //            AddUIElements();
+            //            #endregion
 
-//#if DEBUG
-//            InitializeDebugTextInfo();
-//#endif
+            //#if DEBUG
+            //            InitializeDebugTextInfo();
+            //#endif
 
         }
         protected override void UnloadContent()
@@ -1652,7 +1673,7 @@ namespace GDApp
         }
         protected void EventDispatcher_GameStateChanged(EventData eventData)
         {
-            
+
             this.gameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
         }
 
@@ -1663,14 +1684,14 @@ namespace GDApp
 
         protected override void Update(GameTime gameTime)
         {
-           
+
 
             //exit using new gamepad manager
             if (this.gamePadManager != null && this.gamePadManager.IsPlayerConnected(PlayerIndex.One) && this.gamePadManager.IsButtonPressed(PlayerIndex.One, Buttons.Back))
                 this.Exit();
 
             CheckGameState(gameTime);
-            
+
 
 
 #if DEMO
@@ -1678,9 +1699,9 @@ namespace GDApp
             DoCameraCycle();
 #endif
 
-            
+
             base.Update(gameTime);
-            
+
         }
 
         private void DoCameraCycle()
@@ -1693,7 +1714,7 @@ namespace GDApp
 
         private void DoDebugToggleDemo()
         {
-            if(this.keyboardManager.IsFirstKeyPress(Keys.F5))
+            if (this.keyboardManager.IsFirstKeyPress(Keys.F5))
             {
                 //toggle the boolean variables directly in the debug drawe to show CDCR surfaces
                 this.collisionSkinDebugDrawer.ShowCollisionSkins = !this.collisionSkinDebugDrawer.ShowCollisionSkins;
@@ -1718,7 +1739,7 @@ namespace GDApp
                 if (!this.introCameraSkipped)
                 {
                     //Set Timer to 5 seconds
-                    object[] additionalEventParamsTime= { 5 };
+                    object[] additionalEventParamsTime = { 5 };
                     EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.Timer, additionalEventParamsTime));
                     //Set camera
                     object[] additionalEventParamsB = { AppData.Level1FixedCameraID };
@@ -1732,7 +1753,7 @@ namespace GDApp
             if (this.keyboardManager.IsFirstKeyPress(Keys.P))
             {
 
-               EventDispatcher.Publish(new EventData(EventActionType.OnCameraPause, EventCategoryType.Camera));
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraPause, EventCategoryType.Camera));
                 EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.Timer));
             }
             if (this.keyboardManager.IsFirstKeyPress(Keys.R))
@@ -1748,14 +1769,7 @@ namespace GDApp
         protected override void Draw(GameTime gameTime)
         {
 
-            //    RasterizerState rasterizerState = new RasterizerState();
-            //rasterizerState.CullMode = CullMode.None;
-            //GraphicsDevice.RasterizerState = rasterizerState;
-
-
-            GraphicsDevice.Clear(GoogleGreenColor);
-
-            // TODO: Add your drawing code here
+            //GraphicsDevice.Clear(GoogleGreenColor);
 
             base.Draw(gameTime);
         }
