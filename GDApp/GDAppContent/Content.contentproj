@@ -271,13 +271,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Textures\UI\Menu\Backgrounds\controlsmenu.png">
-      <Name>controlsmenu</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Assets\Textures\UI\Menu\Buttons\genericbtn.png">
       <Name>genericbtn</Name>
       <Importer>TextureImporter</Importer>
@@ -294,6 +287,13 @@
   <ItemGroup>
     <Compile Include="Assets\Textures\Enviornment\Platform.png">
       <Name>Platform</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\Textures\UI\Menu\Backgrounds\controlsmenu.png">
+      <Name>controlsmenu</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

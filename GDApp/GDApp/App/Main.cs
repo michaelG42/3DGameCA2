@@ -1892,10 +1892,10 @@ namespace GDApp
             //    object[] additionalEventParamsTime = { 15 };
             //    EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.Timer, additionalEventParamsTime));
             //}
-            //if (this.keyboardManager.IsFirstKeyPress(Keys.R))
-            //{
-            //    Restart();
-            //}
+            if (this.keyboardManager.IsFirstKeyPress(Keys.F10))
+            {
+                graphics.ToggleFullScreen();
+            }
 
 
 
@@ -1903,8 +1903,8 @@ namespace GDApp
 
         protected override void Draw(GameTime gameTime)
         {
-
-            //GraphicsDevice.Clear(GoogleGreenColor);
+            //Obviously has to be Cornflower Blue
+            GraphicsDevice.Clear(Color.CornflowerBlue);
 
             base.Draw(gameTime);
         }
