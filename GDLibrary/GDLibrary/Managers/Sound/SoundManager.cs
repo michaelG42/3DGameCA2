@@ -232,9 +232,8 @@ namespace GDLibrary
         //resumes a paused 2D cue
         public void ResumeCue(string cueName)
         {
-            Cue cue = this.soundBank.GetCue(cueName);
-            if ((cue != null) && (cue.IsPaused))
-                cue.Resume();
+            if ((this.cueDictionary.ContainsKey(cueName)) && this.cueDictionary[cueName].IsPaused)
+                this.cueDictionary[cueName].Resume();
         }
 
         //stop a 2D cue - AudioStopOptions: AsAuthored and Immediate

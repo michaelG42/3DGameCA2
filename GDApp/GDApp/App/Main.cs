@@ -50,6 +50,7 @@ namespace GDApp
         public ScreenManager screenManager { get; private set; }
         public MyAppMenuManager menuManager { get; private set; }
         public UIManager uiManager { get; private set; }
+        public UIManager MouseUIManager { get; private set; }
         public GamePadManager gamePadManager { get; private set; }
         public SoundManager soundManager { get; private set; }
         public MySimplePickingManager pickingManager { get; private set; }
@@ -85,6 +86,7 @@ namespace GDApp
         private GameState gameState;
         private SimpleZoneObject looseZoneObject;
         private float lavaSpeed;
+
 
         private bool level2Initalized;
         private bool opacitySet;
@@ -205,7 +207,11 @@ namespace GDApp
             this.uiManager = new UIManager(this, this.spriteBatch, this.eventDispatcher, 10, StatusType.Off);
             this.uiManager.DrawOrder = 4;
             Components.Add(this.uiManager);
-        
+
+            this.MouseUIManager = new UIManager(this, this.spriteBatch, this.eventDispatcher, 10, StatusType.Update | StatusType.Drawn);
+            this.MouseUIManager.DrawOrder = 4;
+            Components.Add(this.MouseUIManager);
+
             //this object packages together all managers to give the mouse object the ability to listen for all forms of input from the user, as well as know where camera is etc.
             this.managerParameters = new ManagerParameters(this.objectManager,
                 this.cameraManager, this.mouseManager, this.keyboardManager, this.gamePadManager, this.screenManager, this.soundManager);
@@ -216,7 +222,7 @@ namespace GDApp
             Components.Add(this.pickingManager);
 
             //CountDown timer
-            this.timer = new Timer();
+            this.timer = new Timer(this.eventDispatcher);
        
         }
 
@@ -1045,7 +1051,8 @@ namespace GDApp
 
         private void StartGame()
         {
-            EventDispatcher.Publish(new EventData(EventActionType.OnNonePicked, EventCategoryType.ObjectPicking));
+            
+            EventDispatcher.Publish(new EventData(EventActionType.OnObjectPicked, EventCategoryType.ObjectPicking));
             //will be received by the menu manager and screen manager and set the menu to be shown and game to be paused
             EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.MainMenu));
             object[] additionalParametersSound = { "Music" };
@@ -1255,7 +1262,7 @@ namespace GDApp
                 texture,
                 this.mouseManager,
                 this.eventDispatcher);
-            this.uiManager.Add(myUIMouseObject);
+            this.MouseUIManager.Add(myUIMouseObject);
         }
 
         private void InitializeUIProgress()
@@ -1372,6 +1379,10 @@ namespace GDApp
                 RaiseLava(gameTime);
 
             }
+            //if(this.timerPaused)
+            //{
+            //    this.InitialTimerTime = Math.Abs(this.timer.EndTime) + (int)gameTime.TotalGameTime.TotalSeconds;
+            //}
             
         }
         private void UpdateGameText(GameTime gameTime)
@@ -1411,7 +1422,8 @@ namespace GDApp
         private void DoCountDown(GameState gamestate, GameTime gameTime)
         {
 
-           Console.WriteLine("Timer" + this.timer.EndTime);
+           Console.WriteLine("Timer End Time is" + this.timer.EndTime);
+            Console.WriteLine("Timer Pause Time is " + this.timer.PauseTime);
             if (!this.timer.IsComplete)
             {
 
@@ -1420,7 +1432,7 @@ namespace GDApp
                 int timerTime = this.timer.EndTime;
                 if (timerTime > 0)
                 {
-                    this.timer.finish();
+
                     this.timer.reset();
                     object[] additionalParameters = { gamestate };
                     EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
@@ -1444,6 +1456,7 @@ namespace GDApp
 
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - 160) / 2, 60);
                     this.GameStateText.Text = "GO!";
+
                 }
                 else if (timerTime >= -5)
                 {
@@ -1461,6 +1474,10 @@ namespace GDApp
                         {
                             object[] additionalEventParamsB = { AppData.ThirdPersonCameraID };
                             EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+
+                            //Sets the active Camera to update
+                            EventDispatcher.Publish(new EventData(EventActionType.OnCameraResume, EventCategoryType.Camera));
+
                             this.thirdPersonEventSent = true;
                         }
                     }
@@ -1488,7 +1505,7 @@ namespace GDApp
             Console.WriteLine("Timer is at " + this.timer.EndTime);
             Console.WriteLine("Lava Speed is " + this.lavaSpeed);
             this.timer.set(gameTime, lavaTimer);
-            if (this.timer.EndTime >= -50)
+            if (this.timer.EndTime >= -45)
             {
                 this.lavaSpeed = 0.015f;
             }
@@ -1554,13 +1571,23 @@ namespace GDApp
             if(count == 3)
             {
                 this.timer.reset();
-                this.InitialTimerTime = (gameTime.TotalGameTime.Seconds + 15);
+                this.timer.PauseTime = 0;
+                Console.WriteLine("_______________________________________________");
+                Console.WriteLine("Timer Reset");
+                Console.WriteLine("Timer End Time is" + this.timer.EndTime);
+                Console.WriteLine("Timer Pause Time is " + this.timer.PauseTime);
+                Console.WriteLine("_______________________________________________");
+
+                this.InitialTimerTime = (int)(gameTime.TotalGameTime.TotalSeconds + 15);
 
                 object[] additionalEventParamsB = { AppData.Level2FixedCameraID };
                 EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
 
                 object[] additionalParameters = { GameState.Level2Intro };
                 EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+
+                //Set Timer to 5 seconds
+
             }
         }
 
@@ -1636,7 +1663,8 @@ namespace GDApp
 
         protected override void Update(GameTime gameTime)
         {
-            
+           
+
             //exit using new gamepad manager
             if (this.gamePadManager != null && this.gamePadManager.IsPlayerConnected(PlayerIndex.One) && this.gamePadManager.IsButtonPressed(PlayerIndex.One, Buttons.Back))
                 this.Exit();
@@ -1684,17 +1712,33 @@ namespace GDApp
                 EventDispatcher.Publish(new EventData(EventActionType.OnToggleDebug, EventCategoryType.Debug));
             }
 
-            if (this.keyboardManager.IsFirstKeyPress(Keys.S))
+            if (this.keyboardManager.IsFirstKeyPress(Keys.Space))
             {
-                
+
                 if (!this.introCameraSkipped)
                 {
-                    this.InitialTimerTime = this.timer.StartTime + 5;
+                    //Set Timer to 5 seconds
+                    object[] additionalEventParamsTime= { 5 };
+                    EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.Timer, additionalEventParamsTime));
+                    //Set camera
                     object[] additionalEventParamsB = { AppData.Level1FixedCameraID };
                     EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+
+                    //set bool to true, to stop events being sent multiple times
                     this.introCameraSkipped = true;
                 }
 
+            }
+            if (this.keyboardManager.IsFirstKeyPress(Keys.P))
+            {
+
+               EventDispatcher.Publish(new EventData(EventActionType.OnCameraPause, EventCategoryType.Camera));
+                EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.Timer));
+            }
+            if (this.keyboardManager.IsFirstKeyPress(Keys.R))
+            {
+                EventDispatcher.Publish(new EventData(EventActionType.OnResume, EventCategoryType.Timer));
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraResume, EventCategoryType.Camera));
             }
 
 

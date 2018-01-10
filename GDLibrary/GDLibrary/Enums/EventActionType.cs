@@ -36,6 +36,8 @@ namespace GDLibrary
         //sent by camera manager
         OnCameraSetActive,
         OnCameraCycle,
+        OnCameraPause,
+        OnCameraResume,
 
         //sent by player when gains or loses health 
         OnHealthDelta,

@@ -65,16 +65,14 @@ namespace GDLibrary
             {
                 //turn off update and draw i.e. hide the menu
                 this.StatusType = StatusType.Off;
-                //hide the mouse - comment out this line if you want to see the mouse cursor in-game
-                this.Game.IsMouseVisible = false;
+
             }
             //did the event come from the main menu and is it a start game event
             else if (eventData.EventType == EventActionType.OnPause)
             {
                 //turn on update and draw i.e. show the menu since the game is paused
                 this.StatusType = StatusType.Update | StatusType.Drawn;
-                //show the mouse
-                this.Game.IsMouseVisible = true;
+
             }
 
             //set the mouse to look directly forward otherwise the camera would move forward based on some random mouse orientation

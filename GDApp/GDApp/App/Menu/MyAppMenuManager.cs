@@ -134,7 +134,7 @@ namespace GDApp
 
                 object[] additionalEventParamsB = { AppData.IntroCurveCameraID };
                 EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
-
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraResume, EventCategoryType.Camera));
                 object[] additionalParameters = { GameState.CountDown };
                 EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
                 this.firstStart = false;

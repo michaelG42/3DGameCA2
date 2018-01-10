@@ -38,6 +38,7 @@ namespace GDApp
             : base(id, actorType, statusType, transform, color, spriteEffects, spriteFont, text, textOffsetPosition, 
                   textColor, layerDepth, texture, sourceRectangle, origin, mouseManager)
         {
+
             this.eventDispatcher = eventDispatcher;
             //register with the event dispatcher for the events of interest
             RegisterForEventHandling(eventDispatcher);

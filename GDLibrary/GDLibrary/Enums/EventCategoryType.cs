@@ -31,7 +31,8 @@ namespace GDLibrary
         Video,
         GlobalSound,
         GameState,
-        LavaSpeed
+        LavaSpeed,
+        Timer
         //all other categories of sender...
     }
 }

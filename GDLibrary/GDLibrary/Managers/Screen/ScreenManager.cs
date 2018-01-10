@@ -131,15 +131,35 @@ namespace GDLibrary
                 //turn on update and draw i.e. hide the menu
                 this.StatusType = StatusType.Update | StatusType.Drawn;
 
-                //Unmute Sound Effects
+                //Resume Active Camera
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraResume, EventCategoryType.Camera));
+
+                //resume any active timers
+                EventDispatcher.Publish(new EventData(EventActionType.OnResume, EventCategoryType.Timer));
+
+                //UnPause Sound Effects
+                //Sound effects must be paused as the player can just unmute them from the Audio Menu
+                object[] sound = { "Lava" };
+                EventDispatcher.Publish(new EventData(EventActionType.OnResume, EventCategoryType.Sound2D, sound));
             }
             //did the event come from the main menu and is it a start game event
             else if (eventData.EventType == EventActionType.OnPause)
             {
                 //turn off update and draw i.e. show the menu since the game is paused
                 this.StatusType = StatusType.Off;
+                
+                //pause Active Camera
+                EventDispatcher.Publish(new EventData(EventActionType.OnCameraPause, EventCategoryType.Camera));
 
-                //Mute Sound Effects
+                //Pause any Active Timers
+                EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.Timer));
+
+                //Pause Sound Effects
+                //Lava is the only Sound effect needed to be paused as All other sound events will not be published when game is paused.
+                //I also wanted the music to play during the menu
+                object[] sound = { "Lava" };
+                EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.Sound2D, sound));
+
             }
         }
         #endregion
