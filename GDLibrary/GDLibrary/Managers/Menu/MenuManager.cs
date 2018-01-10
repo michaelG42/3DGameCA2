@@ -37,6 +37,8 @@ namespace GDLibrary
                 return this.activeList;
             }
         }
+
+        public Dictionary<string, List<UIObject>> MenuDictionary { get => menuDictionary; set => menuDictionary = value; }
         #endregion
 
         public MenuManager(Game game, MouseManager mouseManager, KeyboardManager keyboardManager,
@@ -44,7 +46,7 @@ namespace GDLibrary
             StatusType statusType)
             : base(game, eventDispatcher, statusType)
         {
-            this.menuDictionary = new Dictionary<string, List<UIObject>>();
+            this.MenuDictionary = new Dictionary<string, List<UIObject>>();
 
             //used to listen for input
             this.mouseManager = mouseManager;
@@ -82,15 +84,15 @@ namespace GDLibrary
 
         public void Add(string menuSceneID, UIObject actor)
         {
-            if (this.menuDictionary.ContainsKey(menuSceneID))
+            if (this.MenuDictionary.ContainsKey(menuSceneID))
             {
-                this.menuDictionary[menuSceneID].Add(actor);
+                this.MenuDictionary[menuSceneID].Add(actor);
             }
             else
             {
                 List<UIObject> newList = new List<UIObject>();
                 newList.Add(actor);
-                this.menuDictionary.Add(menuSceneID, newList);
+                this.MenuDictionary.Add(menuSceneID, newList);
             }
 
             //if the user forgets to set the active list then set to the sceneID of the last added item
@@ -103,9 +105,9 @@ namespace GDLibrary
 
         public UIObject Find(string menuSceneID, Predicate<UIObject> predicate)
         {
-            if (this.menuDictionary.ContainsKey(menuSceneID))
+            if (this.MenuDictionary.ContainsKey(menuSceneID))
             {
-                return this.menuDictionary[menuSceneID].Find(predicate);
+                return this.MenuDictionary[menuSceneID].Find(predicate);
             }
             return null;
         }
@@ -115,7 +117,7 @@ namespace GDLibrary
             UIObject foundUIObject = Find(menuSceneID, predicate);
 
             if (foundUIObject != null)
-                return this.menuDictionary[menuSceneID].Remove(foundUIObject);
+                return this.MenuDictionary[menuSceneID].Remove(foundUIObject);
 
             return false;
         }
@@ -123,18 +125,18 @@ namespace GDLibrary
         //e.g. return all the actor2D objects associated with the "main menu" or "audio menu"
         public List<UIObject> FindAllBySceneID(string menuSceneID)
         {
-            if (this.menuDictionary.ContainsKey(menuSceneID))
+            if (this.MenuDictionary.ContainsKey(menuSceneID))
             {
-                return this.menuDictionary[menuSceneID];
+                return this.MenuDictionary[menuSceneID];
             }
             return null;
         }
 
         public bool SetActiveList(string menuSceneID)
         {
-            if (this.menuDictionary.ContainsKey(menuSceneID))
+            if (this.MenuDictionary.ContainsKey(menuSceneID))
             {
-                this.activeList = this.menuDictionary[menuSceneID];
+                this.activeList = this.MenuDictionary[menuSceneID];
                 return true;
             }
 

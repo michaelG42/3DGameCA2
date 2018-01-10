@@ -80,15 +80,18 @@ namespace GDLibrary
             eventDispatcher.GlobalSoundChanged += EventDispatcher_GlobalSoundChanged;
             eventDispatcher.Sound3DChanged += EventDispatcher_Sound3DChanged;
             eventDispatcher.Sound2DChanged += EventDispatcher_Sound2DChanged;
+            eventDispatcher.VolumeTextChanged += EventDispatcher_VolumeTextChanged;
             base.RegisterForEventHandling(eventDispatcher);
+        }
+
+        protected virtual void EventDispatcher_VolumeTextChanged(EventData eventData)
+        {
+            DisplayVolume();
         }
 
         protected virtual void EventDispatcher_GlobalSoundChanged(EventData eventData)
         {
-            Console.WriteLine("Event Recieved");
-            Console.WriteLine(eventData.AdditionalParameters[0].ToString());
-            Console.WriteLine(eventData.AdditionalParameters[1].ToString());
-            Console.WriteLine(eventData.EventType.ToString());
+
             if (eventData.EventType == EventActionType.OnMute)
             {
                 //any 2D sounds
@@ -109,6 +112,7 @@ namespace GDLibrary
                 float volume = (float)eventData.AdditionalParameters[0];
                 string soundCategory = (string)eventData.AdditionalParameters[1];
                 SetVolume(volume, soundCategory);
+                
 
             }
             else if (eventData.EventType == EventActionType.OnVolumeChange)
@@ -120,7 +124,29 @@ namespace GDLibrary
                 //3d sounds
                 string soundCategory = (string)eventData.AdditionalParameters[1];
                 ChangeVolume(volumeDelta, soundCategory);
+
+               
             }
+        }
+
+        protected void DisplayVolume()
+        {
+            string volume = "";
+            if (SoundEffect.MasterVolume == 1)
+            {
+                volume = "Max";
+            }
+            else if (SoundEffect.MasterVolume == 0)
+            {
+                volume = "Mute";
+            }
+            else
+            {
+                volume = ((int)((SoundEffect.MasterVolume + 0.001f) * 100)).ToString();
+            }
+            string volumeText = ("Volume : " + volume);
+            object[] VolumeText = { volumeText };
+            EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.MenuText, VolumeText));
         }
 
         protected virtual void EventDispatcher_Sound3DChanged(EventData eventData)

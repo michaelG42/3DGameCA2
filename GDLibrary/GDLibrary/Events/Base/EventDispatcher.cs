@@ -41,6 +41,8 @@ namespace GDLibrary
         public delegate void GameStateEventHandler(EventData eventData);
         public delegate void LavaSpeedEventHandler(EventData eventData);
         public delegate void TimerEventHandler(EventData eventData);
+        public delegate void MenuTextEventHandler(EventData eventData);
+        public delegate void VolumeTextEventHandler(EventData eventData);
 
         //an event is either null (not yet happened) or non-null - when the event occurs the delegate reads through its list and calls all the listening functions
         public event CameraEventHandler CameraChanged;
@@ -62,6 +64,8 @@ namespace GDLibrary
         public event GameStateEventHandler GameStateChanged;
         public event LavaSpeedEventHandler LavaSpeedChanged;
         public event TimerEventHandler TimerChanged;
+        public event MenuTextEventHandler MenuTextChanged;
+        public event VolumeTextEventHandler VolumeTextChanged;
 
         public EventDispatcher(Game game, int initialSize)
             : base(game)
@@ -170,6 +174,14 @@ namespace GDLibrary
                 case EventCategoryType.Timer:
                     OnTimer(eventData);
                     break;
+
+                case EventCategoryType.MenuText:
+                    OnMenuText(eventData);
+                    break;
+
+                case EventCategoryType.VolumeText:
+                    OnVolumeText(eventData);
+                    break;
                 default:
                     break;
             }
@@ -193,6 +205,17 @@ namespace GDLibrary
         protected virtual void OnCamera(EventData eventData)
         {
             CameraChanged?.Invoke(eventData);
+        }
+
+        protected virtual void OnMenuText(EventData eventData)
+        {
+            MenuTextChanged?.Invoke(eventData);
+        }
+
+
+        protected virtual void OnVolumeText(EventData eventData)
+        {
+            VolumeTextChanged?.Invoke(eventData);
         }
 
         protected virtual void OnGameState(EventData eventData)

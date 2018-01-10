@@ -50,7 +50,7 @@ namespace GDApp
         public ScreenManager screenManager { get; private set; }
         public MyAppMenuManager menuManager { get; private set; }
         public UIManager uiManager { get; private set; }
-        public UIManager MouseUIManager { get; private set; }
+        public UIManager MenuUIManager { get; private set; }
         public GamePadManager gamePadManager { get; private set; }
         public SoundManager soundManager { get; private set; }
         public MySimplePickingManager pickingManager { get; private set; }
@@ -82,6 +82,7 @@ namespace GDApp
         private Timer timer;
         private UITextObject GameStateText;
         private UITextObject textClone;
+        private UITextObject MenutextClone;
         private GameState gameState;
         private SimpleZoneObject looseZoneObject;
 
@@ -211,9 +212,9 @@ namespace GDApp
             this.uiManager.DrawOrder = 4;
             Components.Add(this.uiManager);
 
-            this.MouseUIManager = new UIManager(this, this.spriteBatch, this.eventDispatcher, 10, StatusType.Update | StatusType.Drawn);
-            this.MouseUIManager.DrawOrder = 4;
-            Components.Add(this.MouseUIManager);
+            this.MenuUIManager = new UIManager(this, this.spriteBatch, this.eventDispatcher, 10, StatusType.Update | StatusType.Drawn);
+            this.MenuUIManager.DrawOrder = 4;
+            Components.Add(this.MenuUIManager);
 
             //this object packages together all managers to give the mouse object the ability to listen for all forms of input from the user, as well as know where camera is etc.
             this.managerParameters = new ManagerParameters(this.objectManager,
@@ -1267,7 +1268,7 @@ namespace GDApp
                 texture,
                 this.mouseManager,
                 this.eventDispatcher);
-            this.MouseUIManager.Add(myUIMouseObject);
+            this.MenuUIManager.Add(myUIMouseObject);
         }
 
         private void InitializeUIProgress()
@@ -1371,6 +1372,17 @@ namespace GDApp
 
             this.uiManager.Add(textClone);
 
+            this.MenutextClone = (this.GameStateText.Clone() as UITextObject);
+
+            this.MenutextClone.Transform.Scale = new Vector2(0.4f, 0.4f);
+
+            this.MenutextClone.Color = Color.WhiteSmoke;
+
+            this.MenutextClone.Text = "";
+
+            this.MenutextClone.Transform.Translation = new Vector2(GraphicsDevice.Viewport.Width / 12, 160);
+            this.MenuUIManager.Add(this.MenutextClone);
+
 
         }
         private void CheckGameState(GameTime gameTime)
@@ -1388,13 +1400,16 @@ namespace GDApp
             if (this.gameState == GameState.Level2)
             {
                 RaiseLava(gameTime);
-
             }
-            //if(this.timerPaused)
-            //{
-            //    this.InitialTimerTime = Math.Abs(this.timer.EndTime) + (int)gameTime.TotalGameTime.TotalSeconds;
-            //}
 
+            //if (this.menuManager.SetActiveList("audio menu"))
+            //{
+            //    this.MenutextClone.Text = "Hello World";
+            //}
+            //else
+            //{
+            //    this.MenutextClone.Text = "";
+            //}
         }
         private void UpdateGameText(GameTime gameTime)
         {
@@ -1670,6 +1685,7 @@ namespace GDApp
         {
             eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
             eventDispatcher.LavaSpeedChanged += EventDispatcher_LavaSpeedChanged;
+            eventDispatcher.MenuTextChanged += EventDispatcher_MenuTextChanged;
         }
         protected void EventDispatcher_GameStateChanged(EventData eventData)
         {
@@ -1680,6 +1696,11 @@ namespace GDApp
         protected void EventDispatcher_LavaSpeedChanged(EventData eventData)
         {
             this.lavaSpeed = (float)eventData.AdditionalParameters[0];
+        }
+
+        protected void EventDispatcher_MenuTextChanged(EventData eventData)
+        {
+            this.MenutextClone.Text = eventData.AdditionalParameters[0].ToString();
         }
 
         protected override void Update(GameTime gameTime)

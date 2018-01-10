@@ -58,6 +58,7 @@ namespace GDApp
         {
             object[] additionalParameters = { "ButtonClick" };
             EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParameters));
+
             //notice that the IDs are the same as the button IDs specified when we created the menu in Main::AddMenuElements()
             switch (clickedUIObject.ID)
             {
@@ -71,6 +72,7 @@ namespace GDApp
 
                 case "audiobtn":
                     SetActiveList("audio menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
+                    EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.VolumeText));
                     break;
 
                 case "volumeUpbtn":
@@ -79,6 +81,8 @@ namespace GDApp
 
                         object[] SoundsUp = { 0.1f, "Default" };
                         EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.GlobalSound, SoundsUp));
+
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.VolumeText));
                     break;
 
                 case "volumeDownbtn":
@@ -89,6 +93,8 @@ namespace GDApp
 
                         object[] SoundDown = { -0.1f, "Music" };
                         EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.GlobalSound, SoundDown));
+
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.VolumeText));
                     break;
 
                 case "volumeMutebtn":
@@ -97,6 +103,8 @@ namespace GDApp
 
                         object[] MusicMute = { 0.0f, "Music" };
                         EventDispatcher.Publish(new EventData(EventActionType.OnMute, EventCategoryType.GlobalSound, MusicMute));
+
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.VolumeText));
                     break;
 
                 case "volumeUnMutebtn":
@@ -104,10 +112,14 @@ namespace GDApp
                         EventDispatcher.Publish(new EventData(EventActionType.OnUnMute, EventCategoryType.GlobalSound, musicUnMute));
 
                         object[] soundsUnMute = { 0.5f, "Default" };
-                        EventDispatcher.Publish(new EventData(EventActionType.OnMute, EventCategoryType.GlobalSound, soundsUnMute));
+                        EventDispatcher.Publish(new EventData(EventActionType.OnUnMute, EventCategoryType.GlobalSound, soundsUnMute));
+
+                        EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.VolumeText));
                     break;
 
                 case "backbtn":
+                    object[] VolumeText = { "" };
+                    EventDispatcher.Publish(new EventData(EventActionType.OnVolumeChange, EventCategoryType.MenuText, VolumeText));
                     SetActiveList("main menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
                     break;
 

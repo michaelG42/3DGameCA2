@@ -14,6 +14,8 @@ namespace GDLibrary
         //one category for each group of events in EventType
         MainMenu,
         UIMenu,
+        MenuText,
+        VolumeText,
         Camera,
         Player,
         NonPlayer,
