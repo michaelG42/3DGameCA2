@@ -298,7 +298,7 @@ namespace GDApp
             //get the vertices
             VertexPositionNormalTexture[] vertices = PrimitiveUtility.GetNormalTexturedSphere(out primitiveType, out primitiveCount);
 
-            short[] indices = PrimitiveUtility.GetSphereIndices();
+            short[] indices = PrimitiveUtility.GetColoredSphereIndices();
 
             //create the buffered data using indexed since it will reduce the number of vertices required from 36 - 12 - see GetTexturedCube() comment
             vertexData = new IndexedBufferedVertexData<VertexPositionNormalTexture>(graphics, vertices, indices, primitiveType, primitiveCount);

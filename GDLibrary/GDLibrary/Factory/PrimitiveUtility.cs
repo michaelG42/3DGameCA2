@@ -613,62 +613,46 @@ namespace GDLibrary
 
         public static VertexPositionNormalTexture[] GetNormalTexturedSphere(out PrimitiveType primitiveType, out int primitiveCount)
         {
+
+            float radius = 0.5f;
+            int nvertices = 90 * 90; // 90 vertices in a circle, 90 circles in a sphere
+
             primitiveType = PrimitiveType.TriangleList;
-            primitiveCount = 12;
+            primitiveCount = 90 * 90 * 3;
 
-            Vector2 uvTopLeft = new Vector2(0, 0);
-            Vector2 uvTopRight = new Vector2(1, 0);
-            Vector2 uvBottomLeft = new Vector2(0, 1);
-            Vector2 uvBottomRight = new Vector2(1, 1);
+            VertexPositionNormalTexture[] vertices = new VertexPositionNormalTexture[nvertices];
+            Vector3 center = new Vector3(0, 0, 0);
+            Vector3 rad = new Vector3((float)Math.Abs(radius), 0, 0);
+   
 
+            for (int x = 0; x < 90; x++) //90 circles, difference between each is 4 degrees
+            {
+                float difx = 360.0f / 90.0f;
+                for (int y = 0; y < 90; y++) //90 veritces, difference between each is 4 degrees 
+                {
+                    float dify = 360.0f / 90.0f;
 
-            VertexPositionNormalTexture[] vertices = new VertexPositionNormalTexture[12];
+                    Matrix zrot = Matrix.CreateRotationZ(MathHelper.ToRadians(y * dify));// rotate vertex around z
+                    Matrix yrot = Matrix.CreateRotationY(MathHelper.ToRadians(x * difx));// rotate circle around y
 
-            vertices[0] = new VertexPositionNormalTexture(new Vector3(-0.25f, 0f, 0.5f), Vector3.Normalize(new Vector3(-0.25f, 0f, 0.5f)), uvTopLeft);
-            vertices[1] = new VertexPositionNormalTexture(new Vector3(0.25f, 0f, 0.5f), Vector3.Normalize(new Vector3(0.25f, 0f, 0.5f)), uvBottomRight);
-            vertices[2] = new VertexPositionNormalTexture(new Vector3(-0.25f, 0f, -0.5f), Vector3.Normalize(new Vector3(-0.25f, 0f, -0.5f)), uvBottomLeft);
+                    Vector3 point = Vector3.Transform(Vector3.Transform(rad, zrot), yrot);//transformation
 
-            vertices[3] = new VertexPositionNormalTexture(new Vector3(0.25f, 0f, -0.5f), Vector3.Normalize(new Vector3(0.25f, 0f, -0.5f)), uvTopLeft);
-            vertices[4] = new VertexPositionNormalTexture(new Vector3(0f, 0.5f, 0.25f), Vector3.Normalize(new Vector3(0f, 0.5f, 0.25f)), uvBottomRight);
-            vertices[5] = new VertexPositionNormalTexture(new Vector3(0f, 0.5f, -0.25f), Vector3.Normalize(new Vector3(0f, 0.5f, -0.25f)), uvBottomLeft);
+                    Vector3 pointNormal = Vector3.Normalize(point);
 
-            vertices[6] = new VertexPositionNormalTexture(new Vector3(0f, -0.5f, 0.25f), Vector3.Normalize(new Vector3(0f, -0.5f, 0.25f)), uvTopLeft);
-            vertices[7] = new VertexPositionNormalTexture(new Vector3(0f, -0.5f, -0.25f), Vector3.Normalize(new Vector3(0f, -0.5f, -0.25f)), uvBottomRight);
-            vertices[8] = new VertexPositionNormalTexture(new Vector3(0.5f, 0.25f, 0f), Vector3.Normalize(new Vector3(0.5f, 0.25f, 0f)), uvBottomLeft);
+                    //ATAN2(y,x) returns the arc tangent of x and y.
+                    //https://gamedev.stackexchange.com/questions/114412/how-to-get-uv-coordinates-for-sphere-cylindrical-projection
 
-            vertices[9] = new VertexPositionNormalTexture(new Vector3(-0.5f, 0.25f, 0f), Vector3.Normalize(new Vector3(-0.5f, 0.25f, 0f)), uvTopLeft);
-            vertices[10] = new VertexPositionNormalTexture(new Vector3(0.5f, -0.25f, 0f), Vector3.Normalize(new Vector3(0.5f, -0.25f, 0f)), uvBottomRight);
-            vertices[11] = new VertexPositionNormalTexture(new Vector3(-0.5f, -0.25f, 0f), Vector3.Normalize(new Vector3(-0.5f, -0.25f, 0f)), uvBottomLeft);
+                    float u = (float)((Math.Atan2(pointNormal.X, pointNormal.Z) / (2 * Math.PI)) + 0.5);
+                    float v = (((float)Math.Asin(pointNormal.Y) / (float)Math.PI)) + 0.5f;  //(pointNormal.Y * 0.5f) + 0.5f;
+
+                    vertices[x + y * 90] = new VertexPositionNormalTexture(point, point, new Vector2(u,v));
+                }
+            }
+
 
             return vertices;
         }
 
-        public static short[] GetSphereIndices()
-        {
-            short[] indices = new short[60];
-            indices[0] = 0; indices[1] = 6; indices[2] = 1;
-            indices[3] = 0; indices[4] = 11; indices[5] = 6;
-            indices[6] = 1; indices[7] = 4; indices[8] = 0;
-            indices[9] = 1; indices[10] = 8; indices[11] = 4;
-            indices[12] = 1; indices[13] = 10; indices[14] = 8;
-            indices[15] = 2; indices[16] = 5; indices[17] = 3;
-            indices[18] = 2; indices[19] = 9; indices[20] = 5;
-            indices[21] = 2; indices[22] = 11; indices[23] = 9;
-            indices[24] = 3; indices[25] = 7; indices[26] = 2;
-            indices[27] = 3; indices[28] = 10; indices[29] = 7;
-            indices[30] = 4; indices[31] = 8; indices[32] = 5;
-            indices[33] = 4; indices[34] = 9; indices[35] = 0;
-            indices[36] = 5; indices[37] = 8; indices[38] = 3;
-            indices[39] = 5; indices[40] = 9; indices[41] = 4;
-            indices[42] = 6; indices[43] = 10; indices[44] = 1;
-            indices[45] = 6; indices[46] = 11; indices[47] = 7;
-            indices[48] = 7; indices[49] = 10; indices[50] = 6;
-            indices[51] = 7; indices[52] = 11; indices[53] = 2;
-            indices[54] = 8; indices[55] = 10; indices[56] = 3;
-            indices[57] = 9; indices[58] = 11; indices[59] = 0;
-
-            return indices;
-        }
 
         public static VertexPositionColor[] getColoredSphere(out PrimitiveType primitiveType, out int primitiveCount)
         {
@@ -729,6 +713,9 @@ namespace GDLibrary
 
         public static VertexPositionNormalTexture[] GetNormalTexturedCylinder(out PrimitiveType primitiveType, out int primitiveCount)
         {
+            //Using Below as Guidline
+            //https://github.com/tobiasschulz/MonoGame-GLSL/blob/master/Example.Common/Primitives/Cylinder.cs
+
             primitiveType = PrimitiveType.TriangleList;
             primitiveCount = 124;
 
