@@ -112,17 +112,6 @@ namespace GDLibrary
             return null;
         }
 
-        public UIObject Find(string ButtonID)
-        {
-            //Dictionary<string, List<UIObject>> menuDictionaryCopy;
-            //menuDictionaryCopy = this.MenuDictionary;
-
-            //foreach (var item in collection)
-            //{
-
-            //}
-            //return null;
-        }
 
         public bool Remove(string menuSceneID, Predicate<UIObject> predicate)
         {

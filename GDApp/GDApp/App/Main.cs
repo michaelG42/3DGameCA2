@@ -92,6 +92,8 @@ namespace GDApp
         private int lavaTimer;
         private int GameTextSize;
         private int verticalTextOffset;
+        private int restartTime;
+
 
         private bool level2Initalized;
         private bool opacitySet;
@@ -99,7 +101,8 @@ namespace GDApp
         private bool introCameraSkipped;
         private bool lavaTimerSet;
         private bool restartButtonAdded;
-
+        private bool restarting;
+        private bool restartTimeSet;
         #endregion
 
         #region Properties
@@ -168,14 +171,22 @@ namespace GDApp
 
         private void Restart()
         {
-            DisplayMessage("");
-            //this.cameraManager.Remove(AppData.IntroCurveCameraID);
+
+            this.opacitySet = false;
+            this.introCameraSkipped = false;
+            this.thirdPersonEventSent = false;
+            this.level2Initalized = false;
+            this.lavaTimerSet = false;
+
+            DisplayMessage("Restarting");
+            this.GameStateText.Text = "";
+
             this.cameraManager.Clear();
             this.objectManager.Clear();
 
-            LoadGame();
             Integer2 screenResolution = ScreenUtility.HD720;
             InitializeCameras(screenResolution);
+            LoadGame();
 
             object[] additionalEventParamsTime = { 25 };
             EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.Timer, additionalEventParamsTime));
@@ -187,8 +198,6 @@ namespace GDApp
             object[] additionalEventParamsB = { AppData.IntroCurveCameraID };
             EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
             EventDispatcher.Publish(new EventData(EventActionType.OnCameraResume, EventCategoryType.Camera));
-
-            this.introCameraSkipped = false;
 
         }
         private void InitializeManagers(Integer2 screenResolution,
@@ -302,6 +311,7 @@ namespace GDApp
             //this.textureDictionary.Load("Assets/Textures/Foliage/Trees/tree2");
             this.textureDictionary.Load("Assets/Textures/Enviornment/Lava");
             this.textureDictionary.Load("Assets/Textures/Enviornment/VolcanoWall");
+            this.textureDictionary.Load("Assets/Textures/Enviornment/Platform");
             //this.textureDictionary.Load("Assets/Textures/Enviornment/Space");
 
 
@@ -471,7 +481,7 @@ namespace GDApp
                 InitializePlatforms();
                 this.level2Initalized = true;
             }
-            if (!opacitySet)
+            if (!this.opacitySet)
             {
                 OpacifyPlatforms();
             }
@@ -571,7 +581,7 @@ namespace GDApp
             ICollisionPrimitive winCollisionPrimitive = null;
 
             //place the zone and scale it based on how big you want the zone to be
-            winTransform = new Transform3D(new Vector3(0, 150, 10), new Vector3(80, 20, 80));
+            winTransform = new Transform3D(new Vector3(0, 150, 10), new Vector3(40, 20, 40));
 
             //we can have a sphere or a box - its entirely up to the developer
             winCollisionPrimitive = new BoxCollisionPrimitive(winTransform);
@@ -589,7 +599,7 @@ namespace GDApp
             ICollisionPrimitive looseCollisionPrimitive = null;
 
             //place the zone and scale it based on how big you want the zone to be
-            looseTransform = new Transform3D(new Vector3(0, -8, 0), new Vector3(300, 10, 300));
+            looseTransform = new Transform3D(new Vector3(0, -9, 0), new Vector3(300, 10, 300));
 
             //we can have a sphere or a box - its entirely up to the developer
             looseCollisionPrimitive = new BoxCollisionPrimitive(looseTransform);
@@ -610,7 +620,7 @@ namespace GDApp
             PrimitiveObject primativeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, shapeType, effectParameters);
 
             //set the texture that all clones will have
-            primativeObject.EffectParameters.Texture = this.textureDictionary["ml"];
+            primativeObject.EffectParameters.Texture = this.textureDictionary["Platform"];
 
 
 
@@ -706,7 +716,7 @@ namespace GDApp
             PrimitiveObject archetypeObject = this.primitiveFactory.GetArchetypePrimitiveObject(graphics.GraphicsDevice, ShapeType.NormalCylinder, effectParameters);
 
             //set the texture that all clones will have
-            archetypeObject.EffectParameters.Texture = this.textureDictionary["ml"];
+            archetypeObject.EffectParameters.Texture = this.textureDictionary["Platform"];
 
             Transform3D transform;
             CollidablePrimitiveObject collidablePrimitiveObject;
@@ -1278,7 +1288,7 @@ namespace GDApp
         {
             if(!this.restartButtonAdded)
             {
-                this.menuManager
+                //this.menuManager
                 string buttonID = "restartbtn";
                 string buttonText = "Restart";
                 Vector2 position = new Vector2(graphics.PreferredBackBufferWidth / 2.0f, 600);
@@ -1458,7 +1468,11 @@ namespace GDApp
             }
             if (this.gameState == GameState.Level2Intro)
             {
-                InitializeLevel2();
+                if(this.timer.EndTime >= -12)
+                {
+                    InitializeLevel2();
+                }
+               
             }
             if (this.gameState == GameState.Level2)
             {
@@ -1477,39 +1491,61 @@ namespace GDApp
         private void UpdateGameText(GameTime gameTime)
         {
             //Game text is Centered By Multiplying the length of the text By the size, Taking that away from the width then dividing by 2
-            switch (this.gameState)
+            if (!this.restarting)
             {
-                case GameState.NotStarted:
-                    this.GameStateText.Text = "";
-                    this.InitialTimerTime = 24 + (int)gameTime.TotalGameTime.TotalSeconds;
-                    break;
-                case GameState.CountDown:
-                    AddRestartBtn();
-                    DoCountDown(GameState.Level1, gameTime);
-                    break;
-                case GameState.Level1:
-                    this.introCameraSkipped = true;
-                    this.GameStateText.Text = "";
-                    break;
-                case GameState.Level2Intro:
-                    DoCountDown(GameState.Level2, gameTime);
-                    break;
-                case GameState.Level2:
-                    this.introCameraSkipped = true;
-                    this.GameStateText.Text = "";
-                    break;
-                case GameState.Won:
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (8 * this.GameTextSize)) / 2, this.verticalTextOffset);
-                    this.GameStateText.Text = "YOU WIN!";
-                    DisplayMessage("Play Again From Pause Menu");
-                    break;
-                case GameState.Lost:
-                    this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (10 * this.GameTextSize)) / 2, this.verticalTextOffset);
-                    this.GameStateText.Text = "Game Over!";
-                    DisplayMessage("Restart From Pause Menu");
-                    break;
+                switch (this.gameState)
+                {
+                    case GameState.NotStarted:
+                        this.GameStateText.Text = "";
+                        this.InitialTimerTime = 24 + (int)gameTime.TotalGameTime.TotalSeconds;
+                        break;
+                    case GameState.CountDown:
+                        AddRestartBtn();
+                        DoCountDown(GameState.Level1, gameTime);
+                        break;
+                    case GameState.Level1:
+                        this.GameStateText.Text = "";
+                        break;
+                    case GameState.Level2Intro:
+                        DoCountDown(GameState.Level2, gameTime);
+                        break;
+                    case GameState.Level2:
+                        this.GameStateText.Text = "";
+                        break;
+                    case GameState.Won:
+                        this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (8 * this.GameTextSize)) / 2, this.verticalTextOffset);
+                        this.GameStateText.Text = "YOU WIN!";
+                        DisplayMessage("Play Again From Pause Menu");
+                        break;
+                    case GameState.Lost:
+                        this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (10 * this.GameTextSize)) / 2, this.verticalTextOffset);
+                        this.GameStateText.Text = "Game Over!";
+                        DisplayMessage("Restart From Pause Menu");
+                        break;
+                }
+            }
+            else
+            {
+                CheckRestart(gameTime);
             }
 
+        }
+
+        private void CheckRestart(GameTime gameTime)
+        {
+            if(!this.restartTimeSet)
+            {
+                this.restartTime = (int)gameTime.TotalGameTime.TotalSeconds;
+                this.restartTimeSet = true;
+            }
+
+            if((this.restartTime + 1) < (int)gameTime.TotalGameTime.TotalSeconds)
+            {
+                this.restarting = false;
+                this.restartTimeSet = false;
+                DisplayMessage("");
+            }
+            
         }
 
 
@@ -1553,7 +1589,7 @@ namespace GDApp
                 }
                 else if (timerTime >= -5)
                 {
-                    
+                    this.introCameraSkipped = true;
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (1 * GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = this.timer.Display;
                     
@@ -1612,7 +1648,7 @@ namespace GDApp
 
         private void RaiseLava(GameTime gameTime)
         {
-            
+            Console.WriteLine("Timer is at " + this.timer.EndTime);
 
             this.timer.set(gameTime, lavaTimer);
             if (this.timer.EndTime >= -45)
@@ -1678,7 +1714,7 @@ namespace GDApp
                     count++;
                 }
             }
-            if (count == 3)
+            if (count == 3 && this.playerCollidablePrimitiveObject.InGame)
             {
                 //this.timer.reset();
                 this.timer.PauseTime = 0;
@@ -1691,7 +1727,6 @@ namespace GDApp
                 object[] additionalParameters = { GameState.Level2Intro };
                 EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
 
-                //Set Timer to 5 seconds
 
             }
         }
@@ -1777,7 +1812,7 @@ namespace GDApp
         {
             if (eventData.AdditionalParameters != null)
             {
-                this.introCameraSkipped = false;
+                this.restarting = true;
                 Restart();
             }
                 
