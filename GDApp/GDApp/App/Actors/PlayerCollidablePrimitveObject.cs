@@ -22,8 +22,6 @@ namespace GDLibrary
         private Keys[] moveKeys;
         private bool winZoneEventSent;
         private bool looseZoneEventSent;
-        private bool AbovePlatform;
-        private bool platformCollisionSet;
         private ManagerParameters managerParameters;
 
         private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
@@ -71,7 +69,6 @@ namespace GDLibrary
             this.InGame = true;
             this.collidingWithGround = true;
             this.previousPlayers = 3;
-            this.platformCollisionSet = false;
             //RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
@@ -94,7 +91,6 @@ namespace GDLibrary
             this.InGame = true;
             this.collidingWithGround = true;
             this.previousPlayers = 3;
-            this.platformCollisionSet = false;
             //RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
@@ -159,18 +155,7 @@ namespace GDLibrary
             this.previousPosition = this.currentPosition;
             this.previousDirection = this.currentDirection;
             this.previousPlayers = this.currentPlayers;
-            //Console.WriteLine("Current Pos is " + this.currentPosition);
         }
-
-        //protected void RegisterForEventHandling(EventDispatcher eventDispatcher)
-        //{
-        //    eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
-        //}
-        //protected void EventDispatcher_GameStateChanged(EventData eventData)
-        //{
-        //    Console.WriteLine("Event RECIEVED");
-        //    this.GameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
-        //}
 
         protected void InitalizePositions()
         {
@@ -204,7 +189,7 @@ namespace GDLibrary
                     if (!looseZoneEventSent) //add a boolean to stop the event being sent multiple times!
                     {
                         //publish some sort of event - maybe an event to switch the camera?
-                        if((this.ActorType == ActorType.Player))
+                        if ((this.ActorType == ActorType.Player))
                         {
                             object[] additionalParameters = { GameState.Lost };
                             EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
@@ -276,19 +261,6 @@ namespace GDLibrary
                         this.platformVector = Vector3.Zero;
                     }
 
-                        //if ((this.Transform.Translation.Y - 4.5) < (collidee as CollidablePrimitiveObject).Transform.Translation.Y)
-                        //{
-                        //    this.AbovePlatform = false;
-                        //    Console.WriteLine("Y IS LESS");
-                        //    //this.CollisionVector = -this.Velocity;
-                        //    //this.accelerationVector.Y = 1;
-                        //}
-                        //else
-                        //{
-                        //    this.AbovePlatform = true;
-                        //}
-                        //Console.WriteLine("My Y is " + this.Transform.Translation.Y);
-                        //Console.WriteLine("Platform Y Is " + (collidee as CollidablePrimitiveObject).Transform.Translation.Y);
                     this.Collidee = null;
                 }
             }
@@ -298,10 +270,6 @@ namespace GDLibrary
         {
             //Velocity is currentposition - previousposition, then we add the acceleration vector
             //This means a player gradually accelerates and decelerates from the current velocity
-            //if (this.ActorType == ActorType.CollidableEnemy)
-            //{
-            //    this.accelerationVector = -this.accelerationVector;
-            //}
             this.Velocity = CalculateVelocity() + this.accelerationVector;
             if (this.GameState == GameState.Level2)
             {
@@ -324,9 +292,16 @@ namespace GDLibrary
 
         protected void rotate()
         {
-            float ZRot = this.Velocity.X * 15;
-            float XRot = this.Velocity.Z * 15;
-            this.Transform.Rotation += new Vector3(XRot, 0, -ZRot);
+            float ZRot = (this.Velocity.X - this.platformVector.X) * 15;
+            float XRot = (this.Velocity.Z - this.platformVector.Z) * 15;
+
+            if (this.GameState == GameState.Level1)
+            {
+                ZRot = -ZRot;
+            }
+
+
+            this.Transform.Rotation += new Vector3(XRot, 0, ZRot);
         }
 
         protected void HandleMoveSound()
@@ -335,7 +310,6 @@ namespace GDLibrary
 
             if ((this.Velocity.X <= 0.1f && this.Velocity.Z <= 0.1f || !this.inGame) && this.ActorType == ActorType.Player)
             {
-                Console.WriteLine("PAusing");
                 object[] additionalParametersSound = { "BallRoll" };
                 EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.Sound2D, additionalParametersSound));
                 this.moveSoundPlaying = false;
@@ -352,7 +326,7 @@ namespace GDLibrary
         {
             //Gravity
             //Always applies a downward force unless colliding with Ground
-            if(this.GameState == GameState.Level1)
+            if (this.GameState == GameState.Level1)
             {
 
                 if (GetDistanceToTarget(new Vector3(0, 0.5f, 0)) > 32f)
@@ -393,42 +367,41 @@ namespace GDLibrary
                 }
             }
 
-                if (this.currentPosition.Y < -10)
+            if (this.currentPosition.Y < -10)
             {
                 this.ObjectManager.Remove(this);
             }
-            //Console.WriteLine("Gravity is " + this.gravity);
             return gravity;
         }
 
         protected override void HandleInput(GameTime gameTime)
         {
 
-                if (this.managerParameters.KeyboardManager.IsAnyKeyPressed())//CHANGE - To if MoveKeys Are Pressed
+            if (this.managerParameters.KeyboardManager.IsAnyKeyPressed())//CHANGE - To if MoveKeys Are Pressed
+            {
+                //Contorls are different For level 2 as Camera is 3rd Person Not Fixed
+                if (this.GameState == GameState.Level1)
                 {
-                    //Contorls are different For level 2 as Camera is 3rd Person Not Fixed
-                    if (this.GameState == GameState.Level1)
-                    {
-                        Level1Input(gameTime);
-                    }
-                    else
-                    {
-                        Level2Input(gameTime);
-                    }
-
+                    Level1Input(gameTime);
                 }
                 else
                 {
-                    //Else No input is pressed It will graduly decelerate the player 
-                    //Stop just Accelerates in the opposite direction of the velocity 
-                    //until the value is very minute then it is set to 0
-                    //this means the player will come to a stop when no input is pressed
-                    Stop(gameTime);
+                    Level2Input(gameTime);
                 }
+
+            }
+            else
+            {
+                //Else No input is pressed It will graduly decelerate the player 
+                //Stop just Accelerates in the opposite direction of the velocity 
+                //until the value is very minute then it is set to 0
+                //this means the player will come to a stop when no input is pressed
+                Stop(gameTime);
+            }
 
 
         }
-            protected void Level1Input(GameTime gameTime)
+        protected void Level1Input(GameTime gameTime)
         {
             //Set initial acceleration Values to 0
             //So if nothing is pressed the acceleration vector will be 0
@@ -516,13 +489,13 @@ namespace GDLibrary
         {
             //Create temporary Vector for velocity
             Vector3 TempVelocity;
-            
+
             //if collision Vecor is Zero that means No collision Occured
             // and we set current velocity to current position - previous position
             if (this.CollisionVector == Vector3.Zero)
             {
                 TempVelocity = (this.currentPosition - this.previousPosition);
-                if(this.GameState == GameState.Level2)
+                if (this.GameState == GameState.Level2)
                 {
                     TempVelocity -= this.platformVector;
                 }
@@ -577,7 +550,6 @@ namespace GDLibrary
             }
             if (!targetSet)
             {
-                //Console.WriteLine("Setting target");
                 setTarget();
             }
             else
@@ -615,7 +587,6 @@ namespace GDLibrary
 
             }
 
-            //Console.WriteLine("Target is " + target);
             //gets the min distance to begin stopping before taget so it doesnt overshoot
 
 

@@ -110,7 +110,7 @@ namespace GDLibrary
         #endregion
 
         /*************************************************************** Wireframe ***************************************************************/
-        
+
         //returns the vertices for a 1 unit length line segment centred around the origin
         public static VertexPositionColor[] GetWireframeLine(out PrimitiveType primitiveType, out int primitiveCount)
         {
@@ -236,7 +236,7 @@ namespace GDLibrary
         }
 
         /*************************************************************** Colored ***************************************************************/
-        
+
         //returns the vertices for an equilateral triangle, with colors defined by the array, and centred around the origin
         public static VertexPositionColor[] GetColoredTriangle(Color[] vertexColorArray, out PrimitiveType primitiveType, out int primitiveCount)
         {
@@ -623,7 +623,7 @@ namespace GDLibrary
             VertexPositionNormalTexture[] vertices = new VertexPositionNormalTexture[nvertices];
             Vector3 center = new Vector3(0, 0, 0);
             Vector3 rad = new Vector3((float)Math.Abs(radius), 0, 0);
-   
+
 
             for (int x = 0; x < 90; x++) //90 circles, difference between each is 4 degrees
             {
@@ -645,7 +645,7 @@ namespace GDLibrary
                     float u = (float)((Math.Atan2(pointNormal.X, pointNormal.Z) / (2 * Math.PI)) + 0.5);
                     float v = (((float)Math.Asin(pointNormal.Y) / (float)Math.PI)) + 0.5f;  //(pointNormal.Y * 0.5f) + 0.5f;
 
-                    vertices[x + y * 90] = new VertexPositionNormalTexture(point, point, new Vector2(u,v));
+                    vertices[x + y * 90] = new VertexPositionNormalTexture(point, point, new Vector2(u, v));
                 }
             }
 
@@ -662,7 +662,7 @@ namespace GDLibrary
             primitiveType = PrimitiveType.TriangleList;
             primitiveCount = 90 * 90 * 3;
             Color[] vertexColorArray = { Color.Red, Color.Green, Color.Blue, Color.Orange };
-            VertexPositionColor[]  vertices = new VertexPositionColor[nvertices];
+            VertexPositionColor[] vertices = new VertexPositionColor[nvertices];
             Vector3 center = new Vector3(0, 0, 0);
             Vector3 rad = new Vector3((float)Math.Abs(radius), 0, 0);
             Color c = vertexColorArray[random.Next(0, 3)];
@@ -675,7 +675,7 @@ namespace GDLibrary
                     Matrix zrot = Matrix.CreateRotationZ(MathHelper.ToRadians(y * dify));// rotate vertex around z
                     Matrix yrot = Matrix.CreateRotationY(MathHelper.ToRadians(x * difx));// rotate circle around y
                     Vector3 point = Vector3.Transform(Vector3.Transform(rad, zrot), yrot);//transformation
-                   
+
                     vertices[x + y * 90] = new VertexPositionColor(point, Color.White);
                 }
             }
@@ -794,7 +794,7 @@ namespace GDLibrary
             {
                 indices.Add((short)(64));
                 indices.Add((short)(64 + (i + 1) % roundness));
-                indices.Add((short)(64 + (i + 2) % roundness));       
+                indices.Add((short)(64 + (i + 2) % roundness));
             }
 
             for (int i = 0; i < roundness - 2; i++)
@@ -802,7 +802,7 @@ namespace GDLibrary
                 indices.Add((short)(96));
                 indices.Add((short)(96 + (i + 2) % roundness));
                 indices.Add((short)(96 + (i + 1) % roundness));
-                
+
             }
 
             return indices.ToArray();

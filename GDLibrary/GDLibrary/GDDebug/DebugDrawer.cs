@@ -44,7 +44,7 @@ namespace GDLibrary
             this.spriteFont = spriteFont;
             this.textColor = textColor;
             this.textHoriVertOffset = textHoriVertOffset;
-
+            this.StatusType = StatusType.Off;
             this.fpsText = new StringBuilder("FPS:N/A");
             //measure string height so we know how much vertical spacing is needed for multi-line debug info
             this.textHeight = this.spriteFont.MeasureString(this.fpsText).Y;

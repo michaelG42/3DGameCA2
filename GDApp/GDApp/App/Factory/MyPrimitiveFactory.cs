@@ -36,7 +36,7 @@ namespace GDApp
          * and change its position in the world using Transform3D as opposed to having a 1x2x4 cube and a 2x8x10 cube etc in our factories dictionary of primitives.
          * 
          */
-         //returns a primitive object (with Transform3D set to Zero) based on the shape type and effect parameters provided by the developer
+        //returns a primitive object (with Transform3D set to Zero) based on the shape type and effect parameters provided by the developer
         public PrimitiveObject GetArchetypePrimitiveObject(GraphicsDevice graphics, ShapeType shapeType, EffectParameters effectParameters)
         {
             PrimitiveObject primitiveObject = null;
@@ -45,13 +45,13 @@ namespace GDApp
             switch (shapeType)
             {
                 case ShapeType.WireframeLine:
-                        {
-                            if (this.PrimitiveDictionary.ContainsKey(shapeType))
-                                primitiveObject = this.PrimitiveDictionary[shapeType].Clone() as PrimitiveObject;
-                            else
+                    {
+                        if (this.PrimitiveDictionary.ContainsKey(shapeType))
+                            primitiveObject = this.PrimitiveDictionary[shapeType].Clone() as PrimitiveObject;
+                        else
                             primitiveObject = GetWireframeLine(graphics, shapeType, effectParameters);
-                        }
-                        break;
+                    }
+                    break;
 
                 case ShapeType.WireframeOrigin:
                     {
@@ -171,7 +171,7 @@ namespace GDApp
             return primitiveObject;
         }
 
-     
+
         private PrimitiveObject GetWireframeLine(GraphicsDevice graphics, ShapeType shapeType, EffectParameters effectParameters)
         {
             //get the vertices
@@ -279,7 +279,7 @@ namespace GDApp
             return GetPrimitiveObjectFromVertexData(vertexData, shapeType, effectParameters);
         }
 
-        
+
 
         private PrimitiveObject GetNormalTexturedCube(GraphicsDevice graphics, ShapeType shapeType, EffectParameters effectParameters)
         {
