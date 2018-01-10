@@ -184,9 +184,11 @@ namespace GDApp
             this.cameraManager.Clear();
             this.objectManager.Clear();
 
+            LoadGame();
+
             Integer2 screenResolution = ScreenUtility.HD720;
             InitializeCameras(screenResolution);
-            LoadGame();
+
 
             object[] additionalEventParamsTime = { 25 };
             EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.Timer, additionalEventParamsTime));
@@ -1648,7 +1650,6 @@ namespace GDApp
 
         private void RaiseLava(GameTime gameTime)
         {
-            Console.WriteLine("Timer is at " + this.timer.EndTime);
 
             this.timer.set(gameTime, lavaTimer);
             if (this.timer.EndTime >= -45)

@@ -22,7 +22,8 @@ namespace GDLibrary
         private Keys[] moveKeys;
         private bool winZoneEventSent;
         private bool looseZoneEventSent;
-
+        private bool AbovePlatform;
+        private bool platformCollisionSet;
         private ManagerParameters managerParameters;
 
         private Vector3 initialPosition, previousPosition, currentPosition, accelerationVector, platformVector;
@@ -70,7 +71,7 @@ namespace GDLibrary
             this.InGame = true;
             this.collidingWithGround = true;
             this.previousPlayers = 3;
-
+            this.platformCollisionSet = false;
             //RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
@@ -93,7 +94,7 @@ namespace GDLibrary
             this.InGame = true;
             this.collidingWithGround = true;
             this.previousPlayers = 3;
-
+            this.platformCollisionSet = false;
             //RegisterForEventHandling(eventDispatcher);
             //this.accelerationVector = Vector3.Zero;
         }
@@ -275,11 +276,19 @@ namespace GDLibrary
                         this.platformVector = Vector3.Zero;
                     }
 
-                    if (this.Transform.Translation.Y < (collidee as CollidablePrimitiveObject).Transform.Translation.Y)
-                    {
-                        this.accelerationVector.Y = 1;
-                    }
-
+                        //if ((this.Transform.Translation.Y - 4.5) < (collidee as CollidablePrimitiveObject).Transform.Translation.Y)
+                        //{
+                        //    this.AbovePlatform = false;
+                        //    Console.WriteLine("Y IS LESS");
+                        //    //this.CollisionVector = -this.Velocity;
+                        //    //this.accelerationVector.Y = 1;
+                        //}
+                        //else
+                        //{
+                        //    this.AbovePlatform = true;
+                        //}
+                        //Console.WriteLine("My Y is " + this.Transform.Translation.Y);
+                        //Console.WriteLine("Platform Y Is " + (collidee as CollidablePrimitiveObject).Transform.Translation.Y);
                     this.Collidee = null;
                 }
             }
@@ -303,6 +312,8 @@ namespace GDLibrary
             {
                 this.Velocity = Vector3.Zero;
             }
+
+
             if (this.GameState == GameState.Level1)
                 this.Transform.TranslateIncrement = (this.Velocity);
             else
@@ -498,7 +509,7 @@ namespace GDLibrary
         {
             //Create temporary Vector for velocity
             Vector3 TempVelocity;
-
+            
             //if collision Vecor is Zero that means No collision Occured
             // and we set current velocity to current position - previous position
             if (this.CollisionVector == Vector3.Zero)
@@ -524,7 +535,8 @@ namespace GDLibrary
                 TempVelocity.Z = 0;
             }
 
-            TempVelocity.Y = ApplyGravity();
+            TempVelocity.Y = (ApplyGravity() + this.CollisionVector.Y);
+
 
             return TempVelocity;
         }
@@ -537,6 +549,8 @@ namespace GDLibrary
             //In real life two objects with the same mass would simply swap velocitys
             //But I didnt like the results of this 
             //this is much closer to what I want to happen when two spheres collide
+
+
             return (ColideeVelocity + this.Velocity) + this.Velocity / 4;
         }
 
