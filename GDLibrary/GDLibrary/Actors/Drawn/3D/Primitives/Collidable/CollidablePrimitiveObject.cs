@@ -53,7 +53,8 @@ namespace GDLibrary
 
         public Vector3 Velocity { get => velocity; set => velocity = value; }
         public Vector3 CollisionVector { get => collisionVector; set => collisionVector = value; }
-        public GameState GameState { get => gameState; set => gameState = value; }
+        public GameState GameState { get => GameState1; set => GameState1 = value; }
+        public GameState GameState1 { get => gameState; set => gameState = value; }
 
         #endregion
 

@@ -100,6 +100,7 @@ namespace GDLibrary
 
         public override void Update(GameTime gameTime)
         {
+
             this.elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
             this.timer -= elapsed;
             if (!positionsInitialized)
@@ -166,8 +167,8 @@ namespace GDLibrary
         //}
         //protected void EventDispatcher_GameStateChanged(EventData eventData)
         //{
-
-        //    this.gameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
+        //    Console.WriteLine("Event RECIEVED");
+        //    this.GameState = (GameState)Enum.Parse(typeof(GameState), eventData.AdditionalParameters[0].ToString());
         //}
 
         protected void InitalizePositions()

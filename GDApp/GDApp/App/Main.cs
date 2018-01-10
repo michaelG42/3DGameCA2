@@ -85,6 +85,7 @@ namespace GDApp
         private UITextObject MenutextClone;
         private GameState gameState;
         private SimpleZoneObject looseZoneObject;
+        private IController IntroCurvecontroller;
 
         private float lavaSpeed;
         private int InitialTimerTime;
@@ -97,6 +98,7 @@ namespace GDApp
         private bool thirdPersonEventSent;
         private bool introCameraSkipped;
         private bool lavaTimerSet;
+        private bool restartButtonAdded;
 
         #endregion
 
@@ -164,7 +166,31 @@ namespace GDApp
             base.Initialize();
         }
 
+        private void Restart()
+        {
+            DisplayMessage("");
+            //this.cameraManager.Remove(AppData.IntroCurveCameraID);
+            this.cameraManager.Clear();
+            this.objectManager.Clear();
 
+            LoadGame();
+            Integer2 screenResolution = ScreenUtility.HD720;
+            InitializeCameras(screenResolution);
+
+            object[] additionalEventParamsTime = { 25 };
+            EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.Timer, additionalEventParamsTime));
+
+            object[] additionalParameters = { GameState.CountDown };
+            EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
+
+            //InitializeIntroCamera(screenResolution);
+            object[] additionalEventParamsB = { AppData.IntroCurveCameraID };
+            EventDispatcher.Publish(new EventData(EventActionType.OnCameraSetActive, EventCategoryType.Camera, additionalEventParamsB));
+            EventDispatcher.Publish(new EventData(EventActionType.OnCameraResume, EventCategoryType.Camera));
+
+            this.introCameraSkipped = false;
+
+        }
         private void InitializeManagers(Integer2 screenResolution,
             ScreenUtility.ScreenType screenType, bool isMouseVisible, int numberOfGamePadPlayers) //1 - 4
         {
@@ -783,7 +809,7 @@ namespace GDApp
             this.enemys[index].ActorType = ActorType.CollidableEnemy;
             this.enemys[index].Transform = transform;
             this.enemys[index].EffectParameters.DiffuseColor = color;
-
+            //this.enemys[index].GameState = GameState.CountDown;
             //do we want a texture?
             // playerCollidablePrimitiveObject.EffectParameters.Texture = this.textureDictionary["ml"];
 
@@ -1009,14 +1035,14 @@ namespace GDApp
         {
 
             Transform3D transform = null;
-            IController controller = null;
+
             string viewportDictionaryKey = "full viewport";
 
             //track camera 1
 
             transform = new Transform3D(new Vector3(0, 0, 20), -Vector3.UnitZ, Vector3.UnitY);
-            controller = new CurveController(AppData.IntroCurveCameraID + " controller", ControllerType.Track, this.curveDictionary["introCurveCamera"], PlayStatusType.Play);
-            InitializeCamera(screenResolution, AppData.IntroCurveCameraID, this.viewPortDictionary[viewportDictionaryKey], transform, controller, 0, StatusType.Off);
+            this.IntroCurvecontroller = new CurveController(AppData.IntroCurveCameraID + " controller", ControllerType.Track, this.curveDictionary["introCurveCamera"], PlayStatusType.Play);
+            InitializeCamera(screenResolution, AppData.IntroCurveCameraID, this.viewPortDictionary[viewportDictionaryKey], transform, this.IntroCurvecontroller, 0, StatusType.Off);
 
         }
 
@@ -1151,6 +1177,8 @@ namespace GDApp
             clone.AttachController(new UIColorSineLerpController("colorSineLerpController", ControllerType.SineColorLerp,
                     new TrigonometricParameters(1, 0.4f, 0), new Color(255, 156, 0), new Color(200, 50, 50)));//Colors are orange and red
             this.menuManager.Add(sceneID, clone);
+
+
             #endregion
 
             #region Audio Menu
@@ -1243,6 +1271,41 @@ namespace GDApp
             clone.Color = Color.GhostWhite;
             this.menuManager.Add(sceneID, clone);
             #endregion
+
+        }
+
+        private void AddRestartBtn()
+        {
+            if(!this.restartButtonAdded)
+            {
+                this.menuManager
+                string buttonID = "restartbtn";
+                string buttonText = "Restart";
+                Vector2 position = new Vector2(graphics.PreferredBackBufferWidth / 2.0f, 600);
+                Texture2D texture = this.textureDictionary["genericbtn"];
+                Transform2D transform = new Transform2D(position,
+                    0, new Vector2(0.5f, 0.5f),
+                    new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), new Integer2(texture.Width, texture.Height));
+
+                UIButtonObject uiButtonObject = new UIButtonObject(buttonID, ActorType.UIButton, StatusType.Update | StatusType.Drawn,
+                    transform, Color.GhostWhite, SpriteEffects.None, 0.1f, texture, buttonText,
+                    this.fontDictionary["menu"],
+                    Color.Black, new Vector2(0, 2));
+
+                uiButtonObject.AttachController(new UIScaleSineLerpController("sineScaleLerpController2", ControllerType.SineScaleLerp,
+                  new TrigonometricParameters(0.1f, 0.2f, 1)));
+
+
+                uiButtonObject.AttachController(new UIColorSineLerpController("colorSineLerpController", ControllerType.SineColorLerp,
+            new TrigonometricParameters(1, 0.4f, 0), Color.LightSeaGreen, Color.LightGreen));
+
+
+                this.menuManager.Add("main menu", uiButtonObject);
+
+                this.restartButtonAdded = true;
+            }
+
+
         }
 
         private void AddUIElements()
@@ -1417,27 +1480,33 @@ namespace GDApp
             switch (this.gameState)
             {
                 case GameState.NotStarted:
+                    this.GameStateText.Text = "";
                     this.InitialTimerTime = 24 + (int)gameTime.TotalGameTime.TotalSeconds;
                     break;
                 case GameState.CountDown:
+                    AddRestartBtn();
                     DoCountDown(GameState.Level1, gameTime);
                     break;
                 case GameState.Level1:
+                    this.introCameraSkipped = true;
                     this.GameStateText.Text = "";
                     break;
                 case GameState.Level2Intro:
                     DoCountDown(GameState.Level2, gameTime);
                     break;
                 case GameState.Level2:
+                    this.introCameraSkipped = true;
                     this.GameStateText.Text = "";
                     break;
                 case GameState.Won:
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (8 * this.GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "YOU WIN!";
+                    DisplayMessage("Play Again From Pause Menu");
                     break;
                 case GameState.Lost:
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (10 * this.GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = "Game Over!";
+                    DisplayMessage("Restart From Pause Menu");
                     break;
             }
 
@@ -1456,7 +1525,7 @@ namespace GDApp
                 if (timerTime > 0)
                 {
 
-                    this.timer.reset();
+                    //this.timer.reset();
                     object[] additionalParameters = { gamestate };
                     EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
 
@@ -1464,7 +1533,7 @@ namespace GDApp
                     {
                         if (!this.lavaTimerSet)
                         {
-                            this.lavaTimer = gameTime.TotalGameTime.Seconds + 180;
+                            this.lavaTimer = (int)gameTime.TotalGameTime.TotalSeconds + 180;
                             this.lavaTimerSet = true;
                         }
                     }
@@ -1487,13 +1556,13 @@ namespace GDApp
                     
                     this.GameStateText.Transform.Translation = new Vector2((GraphicsDevice.Viewport.Width - (1 * GameTextSize)) / 2, this.verticalTextOffset);
                     this.GameStateText.Text = this.timer.Display;
-                    this.introCameraSkipped = true;
+                    
                     if (previousTimerTime != this.timer.EndTime)
                     {
                         object[] additionalParametersSound = { "CountDownBeep" };
                         EventDispatcher.Publish(new EventData(EventActionType.OnPlay, EventCategoryType.Sound2D, additionalParametersSound));
                     }
-
+             
                     if (gamestate == GameState.Level2)
                     {
                         if (!this.thirdPersonEventSent)
@@ -1543,8 +1612,8 @@ namespace GDApp
 
         private void RaiseLava(GameTime gameTime)
         {
-            Console.WriteLine("Timer is at " + this.timer.EndTime);
-            Console.WriteLine("Lava Speed is " + this.lavaSpeed);
+            
+
             this.timer.set(gameTime, lavaTimer);
             if (this.timer.EndTime >= -45)
             {
@@ -1611,7 +1680,7 @@ namespace GDApp
             }
             if (count == 3)
             {
-                this.timer.reset();
+                //this.timer.reset();
                 this.timer.PauseTime = 0;
 
                 this.InitialTimerTime = (int)(gameTime.TotalGameTime.TotalSeconds + 15);
@@ -1686,6 +1755,7 @@ namespace GDApp
             eventDispatcher.GameStateChanged += EventDispatcher_GameStateChanged;
             eventDispatcher.LavaSpeedChanged += EventDispatcher_LavaSpeedChanged;
             eventDispatcher.MenuTextChanged += EventDispatcher_MenuTextChanged;
+            eventDispatcher.MenuChanged += EventDispatcher_MenuChanged;
         }
         protected void EventDispatcher_GameStateChanged(EventData eventData)
         {
@@ -1703,10 +1773,19 @@ namespace GDApp
             this.MenutextClone.Text = eventData.AdditionalParameters[0].ToString();
         }
 
+        protected void EventDispatcher_MenuChanged(EventData eventData)
+        {
+            if (eventData.AdditionalParameters != null)
+            {
+                this.introCameraSkipped = false;
+                Restart();
+            }
+                
+        }
+
         protected override void Update(GameTime gameTime)
         {
-
-
+          
             //exit using new gamepad manager
             if (this.gamePadManager != null && this.gamePadManager.IsPlayerConnected(PlayerIndex.One) && this.gamePadManager.IsButtonPressed(PlayerIndex.One, Buttons.Back))
                 this.Exit();
@@ -1771,17 +1850,16 @@ namespace GDApp
                 }
 
             }
-            if (this.keyboardManager.IsFirstKeyPress(Keys.P))
-            {
+            //if (this.keyboardManager.IsFirstKeyPress(Keys.P))
+            //{
 
-                EventDispatcher.Publish(new EventData(EventActionType.OnCameraPause, EventCategoryType.Camera));
-                EventDispatcher.Publish(new EventData(EventActionType.OnPause, EventCategoryType.Timer));
-            }
-            if (this.keyboardManager.IsFirstKeyPress(Keys.R))
-            {
-                EventDispatcher.Publish(new EventData(EventActionType.OnResume, EventCategoryType.Timer));
-                EventDispatcher.Publish(new EventData(EventActionType.OnCameraResume, EventCategoryType.Camera));
-            }
+            //    object[] additionalEventParamsTime = { 15 };
+            //    EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.Timer, additionalEventParamsTime));
+            //}
+            //if (this.keyboardManager.IsFirstKeyPress(Keys.R))
+            //{
+            //    Restart();
+            //}
 
 
 

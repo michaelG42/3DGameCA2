@@ -221,6 +221,13 @@ namespace GDLibrary
             this.removeList.Clear();
         }
 
+        public void Clear()
+        {
+            this.opaqueDrawList.Clear();
+            this.transparentDrawList.Clear();
+            this.removeList.Clear(); 
+        }
+
         public void Update(GameTime gameTime)
         {
             //remove any outstanding objects since the last update

@@ -8,6 +8,7 @@ namespace GDApp
     public class MyAppMenuManager : MenuManager
     {
         private bool firstStart = true;
+
         public MyAppMenuManager(Game game, MouseManager mouseManager, KeyboardManager keyboardManager, CameraManager cameraManager,
             SpriteBatch spriteBatch, EventDispatcher eventDispatcher,
             StatusType statusType) : base(game, mouseManager, keyboardManager, cameraManager, spriteBatch, eventDispatcher, statusType)
@@ -127,6 +128,9 @@ namespace GDApp
                     SetActiveList("controls menu"); //use sceneIDs specified when we created the menu scenes in Main::AddMenuElements()
                     break;
 
+                case "restartbtn":
+                    DoRestart();
+                    break;
                 default:
                     break;
             }
@@ -151,6 +155,15 @@ namespace GDApp
                 EventDispatcher.Publish(new EventData(EventActionType.GameStateChanged, EventCategoryType.GameState, additionalParameters));
                 this.firstStart = false;
             }
+
+        }
+
+        private void DoRestart()
+        {
+
+            object[] additionalPar = { "Restart" };
+            EventDispatcher.Publish(new EventData(EventActionType.OnStart, EventCategoryType.MainMenu, additionalPar));
+
         }
 
         private void DoExit()

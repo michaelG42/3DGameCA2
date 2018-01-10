@@ -72,7 +72,7 @@ namespace GDLibrary
             {
                 //using the additional parameters channel of the event data object - ensure that the ID is set as first element in the array
                 SetActiveCamera(x => x.ID.Equals(eventData.AdditionalParameters[0] as string));
-                
+                this.ActiveCamera.StatusType = StatusType.Update;
             }
             else if(eventData.EventType == EventActionType.OnCameraPause)
             {
@@ -81,6 +81,7 @@ namespace GDLibrary
             else if (eventData.EventType == EventActionType.OnCameraResume)
             {
                 this.ActiveCamera.StatusType = StatusType.Update;
+      
             }
         }
 
@@ -105,11 +106,35 @@ namespace GDLibrary
             return false;
         }
 
+        public bool Remove(string id)
+        {
+            bool removed = false;
+            List<Camera3D> cameraListCopy = this.cameraList;
+            Camera3D foundCamera = null;
+            foreach (Camera3D camera in cameraListCopy)
+            {
+                if(camera.ID == id)
+                {
+                    foundCamera = camera;
+                    removed = true;
+                }
+            }
+            if (foundCamera != null)
+                this.cameraList.Remove(foundCamera);
+
+            return removed;
+        }
+
+
         public int RemoveAll(Predicate<Camera3D> predicate)
         {
             return this.cameraList.RemoveAll(predicate);
         }
 
+        public void Clear()
+        {
+            this.cameraList.Clear();
+        }
         public bool SetActiveCamera(Predicate<Camera3D> predicate)
         {
             int index = this.cameraList.FindIndex(predicate);

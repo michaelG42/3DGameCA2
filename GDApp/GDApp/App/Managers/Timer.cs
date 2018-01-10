@@ -88,10 +88,10 @@ namespace GDApp.App.Managers
             }
 
             //Finish and Stop Counting
-            if(this.EndTime == 2)
-            {
-                this.reset();
-            }
+            //if(this.EndTime == 2)
+            //{
+            //    this.reset();
+            //}
 
             if (this.isPaused)
             {
@@ -136,6 +136,7 @@ namespace GDApp.App.Managers
 
         public void setTime(int time)
         {
+            this.IsActive = true;
             this.PauseTime = this.StartTime + time;
         }
     }
